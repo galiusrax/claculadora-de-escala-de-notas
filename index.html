@@ -3,658 +3,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Escala de Notas — Sistema Chileno</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Calculadora de Notas — Chile</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0f13;
-    --surface: #17171e;
-    --surface2: #1e1e28;
-    --border: #2a2a38;
-    --accent: #e8c84a;
-    --accent2: #4a8fe8;
-    --danger: #e84a6b;
-    --success: #4ae8a0;
-    --text: #f0f0f5;
-    --muted: #7070a0;
-    --pass-color: #4ae8a0;
-    --fail-color: #e84a6b;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    padding: 2rem 1rem 4rem;
-  }
-
-  /* Background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(232,200,74,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(232,200,74,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper {
-    max-width: 960px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Header */
-  header {
-    text-align: center;
-    margin-bottom: 3rem;
-    animation: fadeDown 0.6s ease both;
-  }
-
-  .badge {
-    display: inline-block;
-    background: rgba(232,200,74,0.12);
-    border: 1px solid rgba(232,200,74,0.3);
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    padding: 0.3rem 0.8rem;
-    border-radius: 999px;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-  }
-
-  h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-  }
-
-  h1 span { color: var(--accent); }
-
-  .subtitle {
-    color: var(--muted);
-    font-size: 1rem;
-    margin-top: 0.6rem;
-    font-weight: 400;
-  }
-
-  /* Grid layout */
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-
-  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
-
-  /* Cards */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-  }
-
-  .card-title {
-    font-size: 0.7rem;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .card-title::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  /* Input groups */
-  .input-group {
-    margin-bottom: 1rem;
-  }
-
-  label {
-    display: block;
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-bottom: 0.4rem;
-    font-weight: 600;
-  }
-
-  input[type="number"] {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.1rem;
-    font-weight: 500;
-    padding: 0.7rem 1rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    -moz-appearance: textfield;
-  }
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-  input[type="number"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(232,200,74,0.12);
-  }
-
-  /* Slider */
-  .slider-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-  }
-
-  input[type="range"] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-  }
-
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    background: var(--accent);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-
-  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-
-  .slider-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--accent);
-    min-width: 2.5rem;
-    text-align: right;
-  }
-
-  /* Button */
-  .btn {
-    width: 100%;
-    padding: 0.9rem 1.5rem;
-    background: var(--accent);
-    color: #0f0f13;
-    border: none;
-    border-radius: 12px;
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.03em;
-    transition: transform 0.15s, box-shadow 0.15s;
-    margin-top: 0.5rem;
-  }
-
-  .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(232,200,74,0.3);
-  }
-
-  .btn:active { transform: translateY(0); }
-
-  /* Formula cards */
-  .formula-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
-
-  @media (max-width: 640px) { .formula-grid { grid-template-columns: 1fr; } }
-
-  .formula-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-  }
-
-  .formula-box h3 {
-    font-size: 0.7rem;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .formula-box h3 .icon {
-    width: 22px; height: 22px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem;
-  }
-
-  .formula-box h3 .icon.excel { background: rgba(74,200,74,0.15); color: #4ae87a; }
-  .formula-box h3 .icon.math  { background: rgba(74,143,232,0.15); color: var(--accent2); }
-
-  .formula-display {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem 1.1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    color: var(--accent);
-    word-break: break-all;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    position: relative;
-  }
-
-  .copy-btn {
-    position: absolute;
-    top: 0.6rem; right: 0.6rem;
-    background: var(--border);
-    border: none;
-    border-radius: 6px;
-    color: var(--muted);
-    font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    transition: background 0.15s, color 0.15s;
-  }
-
-  .copy-btn:hover { background: var(--accent); color: #0f0f13; }
-
-  .math-formula {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    color: var(--accent2);
-    line-height: 2;
-  }
-
-  .math-formula .var { color: var(--accent); }
-  .math-formula .op  { color: var(--muted); }
-  .math-formula .eq  { color: var(--text); font-weight: 700; }
-
-  /* Results */
-  .results-section {
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
-
-  .results-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .results-header h2 {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  .stats-row {
-    display: flex;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-  }
-
-  .stat-pill {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.4rem 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-  }
-
-  .stat-pill span { color: var(--accent); font-weight: 700; }
-
-  /* Table */
-  .table-wrap {
-    overflow-x: auto;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-
-  thead tr {
-    background: var(--surface2);
-  }
-
-  th {
-    padding: 0.85rem 1rem;
-    text-align: left;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 0.65rem 1rem;
-    border-top: 1px solid var(--border);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.88rem;
-    white-space: nowrap;
-  }
-
-  tr:hover td { background: rgba(255,255,255,0.02); }
-
-  .nota-cell {
-    font-weight: 700;
-    font-size: 1rem;
-  }
-
-  .nota-pass { color: var(--pass-color); }
-  .nota-fail { color: var(--fail-color); }
-
-  .bar-cell { width: 160px; }
-
-  .bar-bg {
-    background: var(--border);
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-  }
-
-  .bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.4s ease;
-  }
-
-  .pct-badge {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .pct-pass { background: rgba(74,232,160,0.12); color: var(--success); }
-  .pct-fail { background: rgba(232,74,107,0.12); color: var(--danger); }
-
-  /* Empty state */
-  .empty {
-    text-align: center;
-    padding: 3rem;
-    color: var(--muted);
-  }
-
-  .empty .icon-big { font-size: 2.5rem; margin-bottom: 0.5rem; }
-
-  /* Animations */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .highlight { color: var(--accent); }
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 0.8rem 0;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #1a1d21;
+  color: #d4cfc8;
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  padding: 2.5rem 1.2rem 5rem;
+}
+.wrapper { max-width: 860px; margin: 0 auto; }
+.flag-line { display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:#4e5360; margin-bottom:0.6rem; font-weight:600; }
+h1 { font-size:clamp(1.8rem,4.5vw,2.8rem); font-weight:800; line-height:1.15; color:#eae6df; margin-bottom:0.4rem; }
+.intro-text { font-size:1rem; color:#6a6e78; line-height:1.6; max-width:520px; font-weight:500; margin-bottom:2.2rem; }
+.config-panel, .formula-card, .results-card {
+  background: #22262d;
+  border: 1px solid #2e333c;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+}
+.config-panel { padding:1.8rem; margin-bottom:1.2rem; }
+.section-label { font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#4e5360; margin-bottom:1rem; }
+.fields-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1.2rem 1.5rem; }
+.field { display:flex; flex-direction:column; gap:0.35rem; }
+.field label { font-size:0.84rem; font-weight:700; color:#8a92a0; }
+.field .hint { font-size:0.73rem; color:#4a5060; font-weight:600; margin-top:-0.2rem; }
+input[type="number"] {
+  width:100%; background:#1a1d21; border:1px solid #2e333c; border-radius:10px;
+  color:#d4cfc8; font-family:'Nunito',sans-serif; font-size:1.05rem; font-weight:700;
+  padding:0.6rem 0.9rem; outline:none; transition:border-color 0.2s,box-shadow 0.2s;
+  -moz-appearance:textfield;
+}
+input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; }
+input[type="number"]:focus { border-color:#6a7a5a; box-shadow:0 0 0 3px rgba(106,122,90,0.15); }
+.slider-field { grid-column:1/-1; }
+.slider-row { display:flex; align-items:center; gap:1rem; margin-top:0.3rem; }
+input[type="range"] { flex:1; -webkit-appearance:none; height:4px; background:#2e333c; border-radius:3px; outline:none; cursor:pointer; }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:19px; height:19px; background:#6a7a5a;
+  border:3px solid #22262d; border-radius:50%; cursor:pointer;
+  box-shadow:0 1px 6px rgba(0,0,0,0.4); transition:transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.18); }
+.slider-pct { font-size:1.05rem; font-weight:800; color:#8a9a78; min-width:3.5rem; text-align:right; }
+.btn-wrap { margin-top:1.4rem; }
+.btn-generar {
+  background:#303828; color:#a8ba96; border:1px solid #404e38;
+  border-radius:11px; font-family:'Nunito',sans-serif; font-size:0.95rem; font-weight:800;
+  padding:0.8rem 1.8rem; cursor:pointer; transition:background 0.18s,transform 0.14s,box-shadow 0.15s;
+}
+.btn-generar:hover { background:#3a4430; transform:translateY(-2px); box-shadow:0 5px 16px rgba(0,0,0,0.35); }
+.btn-generar:active { transform:translateY(0); }
+.formula-row { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.2rem; }
+@media (max-width:580px) { .formula-row { grid-template-columns:1fr; } }
+.formula-card { padding:1.3rem 1.4rem; }
+.formula-card-title { font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#4e5360; margin-bottom:0.8rem; display:flex; align-items:center; gap:0.5rem; }
+.fc-icon { width:20px; height:20px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-size:0.62rem; font-weight:800; }
+.fc-excel { background:#1c2e22; color:#508060; }
+.fc-math  { background:#1c2232; color:#507090; }
+.formula-code {
+  background:#1a1d21; border:1px solid #2e333c; border-radius:10px;
+  padding:0.85rem 1rem; font-family:'Fira Code',monospace; font-size:0.76rem;
+  color:#7a8a6a; word-break:break-all; line-height:1.7; white-space:pre-wrap; position:relative;
+}
+.copy-btn {
+  position:absolute; top:0.5rem; right:0.5rem; background:#2e333c; border:none;
+  border-radius:6px; color:#5e6470; font-size:0.67rem; font-family:'Nunito',sans-serif;
+  font-weight:700; padding:0.2rem 0.5rem; cursor:pointer; transition:background 0.15s,color 0.15s;
+}
+.copy-btn:hover { background:#3a4430; color:#a8ba96; }
+.math-block { font-family:'Fira Code',monospace; font-size:0.76rem; color:#6a6e78; line-height:2.1; white-space:pre-wrap; }
+.math-block .mv { color:#8a9a78; font-weight:600; }
+.math-block .mm { color:#3a3e48; }
+.results-card { overflow:hidden; }
+.results-top { padding:1.1rem 1.4rem; border-bottom:1px solid #2e333c; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; }
+.results-title { font-size:0.95rem; font-weight:800; color:#c0bab2; }
+.pills { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.pill { background:#1a1d21; border:1px solid #2e333c; border-radius:999px; padding:0.22rem 0.7rem; font-size:0.72rem; font-weight:700; color:#4e5360; }
+.pill b { color:#8a9a78; }
+.table-scroll { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+thead th { background:#1e2229; padding:0.7rem 1rem; text-align:left; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:#4a5060; white-space:nowrap; }
+td { padding:0.55rem 1rem; border-top:1px solid #252930; white-space:nowrap; font-weight:600; color:#8a92a0; }
+tr:hover td { background:#1e2229; }
+.nota-num { font-size:1rem; font-weight:800; }
+.pass-color { color:#6a9a6e; }
+.fail-color { color:#9a6a6a; }
+.estado-badge { display:inline-block; padding:0.18rem 0.6rem; border-radius:999px; font-size:0.7rem; font-weight:800; }
+.estado-pass { background:#1c2e22; color:#5a8a5e; }
+.estado-fail { background:#2e1c1c; color:#8a5a5a; }
+.bar-wrap { width:90px; }
+.bar-bg { background:#2e333c; border-radius:4px; height:6px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; }
+.empty-state { text-align:center; padding:3.5rem 2rem; color:#3e4450; }
+.empty-state .big { font-size:2rem; margin-bottom:0.5rem; }
+.empty-state p { font-size:0.88rem; font-weight:600; }
+.footer-note { margin-top:1.4rem; font-size:0.75rem; color:#3a3e48; text-align:center; font-weight:600; }
 </style>
 </head>
 <body>
 <div class="wrapper">
-
-  <!-- Header -->
   <header>
-    <div class="badge">🇨🇱 Sistema de Calificación Chileno</div>
-    <h1>Escala de<br><span>Notas</span></h1>
-    <p class="subtitle">Generador de tabla de conversión · Escala 1.0 – 7.0</p>
+    <div class="flag-line">🇨🇱 Sistema de calificación chileno</div>
+    <h1>Calculadora de escala de notas</h1>
+    <p class="intro-text">Ingresa los puntos de la evaluación, la exigencia y el rango de notas, y te generamos la tabla completa con las fórmulas listas para usar.</p>
   </header>
 
-  <!-- Config + Params -->
-  <div class="grid">
-    <!-- Configuración -->
-    <div class="card">
-      <div class="card-title">Configuración</div>
-
-      <div class="input-group">
-        <label>Puntaje máximo (total de preguntas / puntos)</label>
+  <div class="config-panel">
+    <div class="section-label">¿Cómo es tu evaluación?</div>
+    <div class="fields-grid">
+      <div class="field">
+        <label>Puntaje máximo</label>
+        <span class="hint">Total de puntos o preguntas</span>
         <input type="number" id="puntajeMax" value="40" min="1" max="1000">
       </div>
-
-      <div class="input-group">
-        <label>Exigencia — porcentaje mínimo para aprobar</label>
-        <div class="slider-wrap">
-          <input type="range" id="exigenciaSlider" min="30" max="95" value="60" step="1"
-            oninput="document.getElementById('exigenciaNum').value=this.value; document.getElementById('exigenciaDisp').textContent=this.value+'%'">
-          <span class="slider-val" id="exigenciaDisp">60%</span>
-        </div>
-        <input type="number" id="exigenciaNum" value="60" min="30" max="95" style="margin-top:0.5rem"
-          oninput="document.getElementById('exigenciaSlider').value=this.value; document.getElementById('exigenciaDisp').textContent=this.value+'%'">
-      </div>
-    </div>
-
-    <!-- Notas -->
-    <div class="card">
-      <div class="card-title">Escala de notas</div>
-
-      <div class="input-group">
-        <label>Nota mínima (al obtener 0 puntos)</label>
+      <div class="field">
+        <label>Nota mínima</label>
+        <span class="hint">Con 0 puntos se obtiene...</span>
         <input type="number" id="notaMin" value="1.0" min="1.0" max="3.9" step="0.1">
       </div>
-
-      <div class="input-group">
+      <div class="field">
         <label>Nota de aprobación</label>
-        <input type="number" id="notaApro" value="4.0" min="1.1" max="6.9" step="0.1">
+        <span class="hint">Generalmente 4.0</span>
+        <input type="number" id="notaApro" value="4.0" min="1.1" max="9.9" step="0.1">
       </div>
-
-      <div class="input-group">
+      <div class="field">
         <label>Nota máxima</label>
+        <span class="hint">Con el 100% de puntos</span>
         <input type="number" id="notaMax" value="7.0" min="4.1" max="10.0" step="0.1">
       </div>
-
-      <button class="btn" onclick="generar()">⚡ Generar escala</button>
+      <div class="field slider-field">
+        <label>Exigencia — porcentaje mínimo para aprobar</label>
+        <div class="slider-row">
+          <input type="range" id="exigSlider" min="30" max="95" value="60" step="1"
+            oninput="syncExig(this.value)">
+          <span class="slider-pct" id="exigDisp">60%</span>
+        </div>
+        <div style="margin-top:0.5rem;max-width:110px">
+          <input type="number" id="exigNum" value="60" min="30" max="95"
+            oninput="syncExigFromInput(this.value)">
+        </div>
+      </div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-generar" onclick="generar()">Calcular escala →</button>
     </div>
   </div>
 
-  <!-- Fórmulas -->
-  <div class="formula-grid">
-    <div class="formula-box">
-      <h3><span class="icon excel">XL</span>Fórmula Excel</h3>
-      <div class="formula-display" id="formulaExcel" style="padding-right:3.5rem">
-        — presiona generar —
-        <button class="copy-btn" onclick="copiar('formulaExcel')">copiar</button>
-      </div>
+  <div class="formula-row">
+    <div class="formula-card">
+      <div class="formula-card-title"><span class="fc-icon fc-excel">XL</span>Para pegar en Excel</div>
+      <div class="formula-code" id="fExcelBox">Genera la escala para ver la fórmula<button class="copy-btn" onclick="copiar('fExcelBox')">copiar</button></div>
     </div>
-    <div class="formula-box">
-      <h3><span class="icon math">∑</span>Fórmula Matemática</h3>
-      <div id="formulaMath" class="math-formula">
-        — presiona generar —
-      </div>
+    <div class="formula-card">
+      <div class="formula-card-title"><span class="fc-icon fc-math">∑</span>Cómo funciona el cálculo</div>
+      <div class="math-block" id="fMathBox">Genera la escala para ver la fórmula</div>
     </div>
   </div>
 
-  <!-- Tabla -->
-  <div class="results-section">
-    <div class="results-header">
-      <h2>Tabla de conversión</h2>
+  <div class="results-card">
+    <div class="results-top">
+      <div class="results-title">Tabla de conversión</div>
+      <div class="pills" id="pillsRow"></div>
     </div>
-    <div class="stats-row" id="statsRow"></div>
-    <div class="table-wrap">
+    <div class="table-scroll">
       <table>
         <thead>
-          <tr>
-            <th>#</th>
-            <th>Puntaje</th>
-            <th>% Logro</th>
-            <th>Nota</th>
-            <th>Estado</th>
-            <th class="bar-cell">Barra</th>
-          </tr>
+          <tr><th>Puntaje</th><th>% logrado</th><th>Nota</th><th>Resultado</th><th>Progreso</th></tr>
         </thead>
-        <tbody id="tablaCuerpo">
-          <tr>
-            <td colspan="6">
-              <div class="empty">
-                <div class="icon-big">📊</div>
-                Configura los parámetros y presiona <strong>Generar escala</strong>
-              </div>
-            </td>
-          </tr>
+        <tbody id="tbody">
+          <tr><td colspan="5"><div class="empty-state"><div class="big">📋</div><p>Configura tu evaluación y presiona <strong>Calcular escala</strong></p></div></td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
+  <div class="footer-note">Los resultados se redondean a un decimal, igual que el sistema de notas chileno.</div>
 </div>
 
 <script>
-function redondear(n, dec = 1) {
-  return Math.round(n * Math.pow(10, dec)) / Math.pow(10, dec);
+function syncExig(v){document.getElementById('exigNum').value=v;document.getElementById('exigDisp').textContent=v+'%';}
+function syncExigFromInput(v){v=Math.min(95,Math.max(30,parseInt(v)||60));document.getElementById('exigSlider').value=v;document.getElementById('exigDisp').textContent=v+'%';}
+function r1(n){return Math.round(n*10)/10;}
+function calcNota(p,pApro,pMax,nMin,nApro,nMax){
+  if(pApro===0)return nMin;
+  if(p<pApro)return r1(nMin+(p/pApro)*(nApro-nMin));
+  if(pMax===pApro)return nMax;
+  return r1(nApro+((p-pApro)/(pMax-pApro))*(nMax-nApro));
 }
+function generar(){
+  const pMax=parseInt(document.getElementById('puntajeMax').value)||40;
+  const exig=parseFloat(document.getElementById('exigNum').value)||60;
+  const nMin=parseFloat(document.getElementById('notaMin').value)||1.0;
+  const nApro=parseFloat(document.getElementById('notaApro').value)||4.0;
+  const nMax=parseFloat(document.getElementById('notaMax').value)||7.0;
+  const pApro=Math.ceil(pMax*(exig/100));
+  const dNeg=(nApro-nMin).toFixed(1);
+  const dPos=(nMax-nApro).toFixed(1);
+  const dPts=pMax-pApro;
 
-function calcularNota(puntaje, pMax, exigencia, nMin, nApro, nMax) {
-  const pApro = Math.ceil(pMax * (exigencia / 100));
-  if (puntaje < pApro) {
-    // tramo inferior: nMin a nApro
-    return redondear(nMin + (puntaje / pApro) * (nApro - nMin));
-  } else {
-    // tramo superior: nApro a nMax
-    return redondear(nApro + ((puntaje - pApro) / (pMax - pApro)) * (nMax - nApro));
-  }
-}
+  const fExcel=`=SI(A1<${pApro},REDONDEAR(${nMin.toFixed(1)}+(A1/${pApro})*${dNeg},1),REDONDEAR(${nApro.toFixed(1)}+((A1-${pApro})/${dPts})*${dPos},1))`;
+  document.getElementById('fExcelBox').childNodes[0].textContent=fExcel;
 
-function generar() {
-  const pMax    = parseInt(document.getElementById('puntajeMax').value) || 40;
-  const exig    = parseFloat(document.getElementById('exigenciaNum').value) || 60;
-  const nMin    = parseFloat(document.getElementById('notaMin').value) || 1.0;
-  const nApro   = parseFloat(document.getElementById('notaApro').value) || 4.0;
-  const nMax    = parseFloat(document.getElementById('notaMax').value) || 7.0;
-  const pApro   = Math.ceil(pMax * (exig / 100));
+  document.getElementById('fMathBox').innerHTML=
+`<span class="mm">Variables:</span>
+  <span class="mv">p</span>  = puntaje obtenido  |  <span class="mv">P</span> = ${pMax}  |  <span class="mv">p*</span> = ${pApro} (${exig}% de ${pMax})
 
-  // ── Fórmula Excel ──────────────────────────────────────
-  // A1 = puntaje
-  const fExcel =
-    `=SI(A1<${pApro},` +
-    `REDONDEAR(${nMin}+(A1/${pApro})*${(nApro-nMin).toFixed(1)},1),` +
-    `REDONDEAR(${nApro}+((A1-${pApro})/${pMax-pApro})*${(nMax-nApro).toFixed(1)},1))`;
+<span class="mm">Si p &lt; p*  →  tramo reprobado:</span>
+  N = <span class="mv">${nMin.toFixed(1)}</span> + (p ÷ <span class="mv">${pApro}</span>) × <span class="mv">${dNeg}</span>
 
-  document.getElementById('formulaExcel').childNodes[0].textContent = fExcel;
+<span class="mm">Si p ≥ p*  →  tramo aprobado:</span>
+  N = <span class="mv">${nApro.toFixed(1)}</span> + ((p − <span class="mv">${pApro}</span>) ÷ <span class="mv">${dPts}</span>) × <span class="mv">${dPos}</span>`;
 
-  // ── Fórmula matemática ─────────────────────────────────
-  document.getElementById('formulaMath').innerHTML = `
-<b style="color:var(--text)">Sea:</b>
-  <span class="var">p</span> <span class="op">=</span> puntaje obtenido
-  <span class="var">P</span> <span class="op">=</span> ${pMax} (puntaje máximo)
-  <span class="var">E</span> <span class="op">=</span> ${exig}% (exigencia)
-  <span class="var">p*</span> <span class="op">=</span> ⌈P × E⌉ <span class="op">=</span> ${pApro} (puntaje de aprobación)
+  document.getElementById('pillsRow').innerHTML=
+    `<div class="pill">Máx: <b>${pMax} pts</b></div>
+     <div class="pill">Aprueba con: <b>${pApro} pts</b></div>
+     <div class="pill">Exigencia: <b>${exig}%</b></div>`;
 
-<b style="color:var(--text)">Si <span class="var">p</span> < <span class="var">p*</span>:</b>
-  N <span class="eq">=</span> ${nMin.toFixed(1)} + <span class="var">p</span>/<span class="var">p*</span> × ${(nApro-nMin).toFixed(1)}
-
-<b style="color:var(--text)">Si <span class="var">p</span> ≥ <span class="var">p*</span>:</b>
-  N <span class="eq">=</span> ${nApro.toFixed(1)} + (<span class="var">p</span> − ${pApro}) / (${pMax} − ${pApro}) × ${(nMax-nApro).toFixed(1)}`;
-
-  // ── Tabla ───────────────────────────────────────────────
-  const tbody = document.getElementById('tablaCuerpo');
-  tbody.innerHTML = '';
-
-  let aprobados = 0;
-  for (let p = 0; p <= pMax; p++) {
-    const pct  = (p / pMax * 100).toFixed(1);
-    const nota = calcularNota(p, pMax, exig, nMin, nApro, nMax);
-    const pass = nota >= nApro;
-    if (pass) aprobados++;
-
-    const barPct = ((nota - nMin) / (nMax - nMin) * 100).toFixed(1);
-    const barColor = pass ? 'var(--pass-color)' : 'var(--fail-color)';
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="color:var(--muted)">${p}</td>
-      <td>${p} / ${pMax}</td>
-      <td>
-        <span class="pct-badge ${pass ? 'pct-pass' : 'pct-fail'}">${pct}%</span>
-      </td>
-      <td class="nota-cell ${pass ? 'nota-pass' : 'nota-fail'}">${nota.toFixed(1)}</td>
-      <td style="color:${pass ? 'var(--success)' : 'var(--danger)'}; font-size:0.8rem; font-weight:700">
-        ${pass ? '✓ Aprobado' : '✗ Reprobado'}
-      </td>
-      <td class="bar-cell">
-        <div class="bar-bg">
-          <div class="bar-fill" style="width:${barPct}%; background:${barColor}"></div>
-        </div>
-      </td>`;
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  for(let p=0;p<=pMax;p++){
+    const pct=(p/pMax*100).toFixed(1);
+    const nota=calcNota(p,pApro,pMax,nMin,nApro,nMax);
+    const pass=nota>=nApro;
+    const barW=((nota-nMin)/(nMax-nMin)*100).toFixed(1);
+    const barC=pass?'#5a7a5e':'#7a5a5a';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${p} <span style="color:#3a3e48;font-weight:500">/ ${pMax}</span></td>
+      <td>${pct}%</td>
+      <td class="nota-num ${pass?'pass-color':'fail-color'}">${nota.toFixed(1)}</td>
+      <td><span class="estado-badge ${pass?'estado-pass':'estado-fail'}">${pass?'Aprobado':'Reprobado'}</span></td>
+      <td class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${barW}%;background:${barC}"></div></div></td>`;
     tbody.appendChild(tr);
   }
-
-  // ── Stats ───────────────────────────────────────────────
-  document.getElementById('statsRow').innerHTML = `
-    <div class="stat-pill">Puntaje máx: <span>${pMax}</span></div>
-    <div class="stat-pill">Exigencia: <span>${exig}%</span></div>
-    <div class="stat-pill">Puntaje aprobación: <span>${pApro}</span></div>
-    <div class="stat-pill">Nota mín: <span>${nMin.toFixed(1)}</span></div>
-    <div class="stat-pill">Nota aprobación: <span>${nApro.toFixed(1)}</span></div>
-    <div class="stat-pill">Total puntajes: <span>${pMax + 1}</span></div>`;
 }
-
-function copiar(id) {
-  const el = document.getElementById(id);
-  const text = el.childNodes[0].textContent.trim();
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = el.querySelector('.copy-btn');
-    btn.textContent = '✓ copiado';
-    setTimeout(() => btn.textContent = 'copiar', 1500);
+function copiar(id){
+  const el=document.getElementById(id);
+  const txt=el.childNodes[0].textContent.trim();
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=el.querySelector('.copy-btn');
+    btn.textContent='✓ listo';
+    setTimeout(()=>btn.textContent='copiar',1600);
   });
 }
-
-// Generar al cargar
-window.addEventListener('load', generar);
+window.addEventListener('load',generar);
 </script>
 </body>
 </html>
