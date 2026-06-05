@@ -3,707 +3,659 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Académica</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<title>Escala de Notas — Sistema Chileno</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0b0d1a;--surface:#111427;--card:#161a30;--border:#232745;
-  --accent:#4f8bff;--accent2:#ff5f5f;--accent3:#3de8a0;--warn:#ffc14d;
-  --text:#e6e9f8;--muted:#6e78a8;--font:'DM Sans',sans-serif;
-  --head:'Syne',sans-serif;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;
-  background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(79,139,255,.12),transparent),
-             radial-gradient(ellipse 60% 40% at 90% 80%,rgba(61,232,160,.08),transparent);
-  pointer-events:none;z-index:0;}
-.noise{position:fixed;inset:0;opacity:.025;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:200px;pointer-events:none;z-index:1;}
-.wrap{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:2.5rem 1.4rem 6rem;}
+  :root {
+    --bg: #0f0f13;
+    --surface: #17171e;
+    --surface2: #1e1e28;
+    --border: #2a2a38;
+    --accent: #e8c84a;
+    --accent2: #4a8fe8;
+    --danger: #e84a6b;
+    --success: #4ae8a0;
+    --text: #f0f0f5;
+    --muted: #7070a0;
+    --pass-color: #4ae8a0;
+    --fail-color: #e84a6b;
+  }
 
-/* ── HEADER ── */
-header{text-align:center;margin-bottom:2.8rem;animation:fadeDown .5s ease both;}
-.tag{display:inline-flex;align-items:center;gap:.45rem;background:rgba(79,139,255,.1);
-  border:1px solid rgba(79,139,255,.28);border-radius:999px;
-  padding:.28rem .9rem;font-size:.72rem;font-weight:500;color:var(--accent);
-  letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;}
-h1{font-family:var(--head);font-size:clamp(1.9rem,5.5vw,3rem);font-weight:800;line-height:1.08;
-  background:linear-gradient(135deg,#fff 0%,var(--accent) 55%,var(--accent3) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.7rem;}
-.sub{color:var(--muted);font-size:.93rem;font-weight:300;max-width:480px;margin:0 auto;line-height:1.6;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── STUDENT NAME ── */
-.name-row{display:flex;gap:1rem;align-items:flex-end;margin-bottom:2rem;animation:fadeUp .4s .05s ease both;}
-.name-row .field{flex:1;}
-.name-row input[type="text"]{width:100%;}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
 
-/* ── ASISTENCIA SECTION ── */
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;}
-.section-title{font-family:var(--head);font-size:1rem;font-weight:700;color:var(--text);}
-.section-badge{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
-  padding:.2rem .65rem;border-radius:999px;}
-.badge-blue{background:rgba(79,139,255,.15);color:var(--accent);border:1px solid rgba(79,139,255,.25);}
-.badge-red{background:rgba(255,95,95,.12);color:var(--accent2);border:1px solid rgba(255,95,95,.22);}
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,200,74,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,200,74,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-/* ── CARD ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.6rem;margin-bottom:1.2rem;animation:fadeUp .4s ease both;}
-.card-label{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;}
-.card-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
 
-/* ── FORM ── */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-@media(max-width:520px){.grid{grid-template-columns:1fr;}}
-.field{display:flex;flex-direction:column;gap:.4rem;}
-.field.full{grid-column:1/-1;}
-label{font-size:.78rem;font-weight:500;color:var(--muted);}
-input[type="number"],input[type="text"],select{
-  background:var(--surface);border:1.5px solid var(--border);border-radius:11px;
-  padding:.68rem .9rem;color:var(--text);font-family:var(--font);font-size:.95rem;
-  font-weight:400;transition:border-color .2s,box-shadow .2s;width:100%;}
-input[type="number"]{-moz-appearance:textfield;appearance:textfield;}
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;}
-input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,139,255,.14);}
-input.err{border-color:var(--accent2)!important;box-shadow:0 0 0 3px rgba(255,95,95,.12)!important;}
-.hint{font-size:.7rem;color:var(--muted);opacity:.7;}
-select{cursor:pointer;}
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeDown 0.6s ease both;
+  }
 
-/* ── BUTTONS ── */
-.btn{display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%;
-  padding:.82rem 1.4rem;border:none;border-radius:13px;font-family:var(--head);
-  font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
-.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 18px rgba(79,139,255,.3);}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(79,139,255,.4);}
-.btn-red{background:var(--accent2);color:#fff;box-shadow:0 4px 18px rgba(255,95,95,.3);}
-.btn-red:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(255,95,95,.4);}
-.btn-green{background:var(--accent3);color:#0b1a14;box-shadow:0 4px 18px rgba(61,232,160,.28);}
-.btn-green:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(61,232,160,.38);}
-.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:.82rem;padding:.58rem;}
-.btn-ghost:hover{color:var(--text);border-color:var(--muted);}
-.btn-sm{padding:.5rem .9rem;font-size:.78rem;width:auto;}
-.btn-row{display:flex;gap:.7rem;margin-top:1.2rem;flex-wrap:wrap;}
+  .badge {
+    display: inline-block;
+    background: rgba(232,200,74,0.12);
+    border: 1px solid rgba(232,200,74,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
 
-/* ── RAMOS ── */
-.ramos-list{display:flex;flex-direction:column;gap:1rem;}
-.ramo-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:1.2rem;position:relative;animation:fadeUp .3s ease both;}
-.ramo-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;cursor:pointer;user-select:none;}
-.ramo-num{font-family:var(--head);font-size:.75rem;font-weight:700;
-  width:28px;height:28px;display:grid;place-items:center;border-radius:8px;
-  background:rgba(79,139,255,.15);color:var(--accent);flex-shrink:0;}
-.ramo-name-display{font-family:var(--head);font-size:.95rem;font-weight:700;flex:1;color:var(--text);}
-.ramo-summary{font-size:.78rem;color:var(--muted);}
-.chevron{font-size:.75rem;color:var(--muted);transition:transform .25s;margin-left:auto;}
-.ramo-card.open .chevron{transform:rotate(180deg);}
-.ramo-body{display:none;}
-.ramo-card.open .ramo-body{display:block;}
-.ramo-del{position:absolute;top:.9rem;right:.9rem;background:rgba(255,95,95,.12);
-  border:1px solid rgba(255,95,95,.2);color:var(--accent2);border-radius:8px;
-  padding:.22rem .5rem;font-size:.7rem;cursor:pointer;font-family:var(--head);font-weight:700;
-  transition:all .2s;}
-.ramo-del:hover{background:rgba(255,95,95,.22);}
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
 
-/* ── NOTAS TABLE ── */
-.notas-wrap{margin-top:1rem;}
-.notas-table{width:100%;border-collapse:collapse;}
-.notas-table th{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);padding:.5rem .6rem;text-align:left;border-bottom:1px solid var(--border);}
-.notas-table td{padding:.45rem .6rem;border-bottom:1px solid rgba(35,39,69,.5);}
-.notas-table td input{padding:.42rem .6rem;font-size:.88rem;}
-.notas-table tr:last-child td{border-bottom:none;}
-.del-nota{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.95rem;
-  padding:.2rem .35rem;border-radius:6px;transition:color .2s,background .2s;}
-.del-nota:hover{color:var(--accent2);background:rgba(255,95,95,.1);}
-.add-nota-btn{margin-top:.7rem;display:inline-flex;align-items:center;gap:.35rem;
-  background:rgba(79,139,255,.08);border:1px dashed rgba(79,139,255,.3);color:var(--accent);
-  border-radius:10px;padding:.45rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer;
-  font-family:var(--font);transition:all .2s;}
-.add-nota-btn:hover{background:rgba(79,139,255,.14);}
+  h1 span { color: var(--accent); }
 
-/* ── RESULTS ── */
-.result-section{margin-top:2rem;animation:fadeUp .4s ease both;}
-.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
-.ramo-result{border-radius:16px;padding:1.4rem;border:1.5px solid;}
-.ramo-result.ok{background:rgba(61,232,160,.06);border-color:rgba(61,232,160,.25);}
-.ramo-result.warn{background:rgba(255,193,77,.06);border-color:rgba(255,193,77,.25);}
-.ramo-result.danger{background:rgba(255,95,95,.06);border-color:rgba(255,95,95,.22);}
-.rr-name{font-family:var(--head);font-size:.88rem;font-weight:700;margin-bottom:.9rem;
-  display:flex;align-items:center;gap:.5rem;}
-.rr-prom{font-family:var(--head);font-size:2rem;font-weight:800;line-height:1;}
-.ok .rr-prom{color:var(--accent3);}
-.warn .rr-prom{color:var(--warn);}
-.danger .rr-prom{color:var(--accent2);}
-.rr-sub{font-size:.78rem;color:var(--muted);margin-top:.25rem;margin-bottom:.8rem;}
-.pill{display:inline-block;border-radius:999px;padding:.2rem .65rem;font-size:.68rem;font-weight:700;letter-spacing:.06em;}
-.pill-ok{background:rgba(61,232,160,.15);color:var(--accent3);}
-.pill-warn{background:rgba(255,193,77,.15);color:var(--warn);}
-.pill-danger{background:rgba(255,95,95,.15);color:var(--accent2);}
-.rr-details{margin-top:.8rem;font-size:.78rem;color:var(--muted);line-height:1.6;border-top:1px solid rgba(255,255,255,.06);padding-top:.8rem;}
-.rr-details strong{color:var(--text);}
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-top: 0.6rem;
+    font-weight: 400;
+  }
 
-/* asistencia result */
-.asist-result{border-radius:16px;padding:1.3rem;border:1.5px solid;margin-bottom:.8rem;}
-.asist-result.ok{background:rgba(61,232,160,.06);border-color:rgba(61,232,160,.25);}
-.asist-result.danger{background:rgba(255,95,95,.06);border-color:rgba(255,95,95,.22);}
-.asist-name{font-family:var(--head);font-size:.82rem;font-weight:700;margin-bottom:.4rem;}
-.asist-pct{font-family:var(--head);font-size:1.6rem;font-weight:800;}
-.ok .asist-pct{color:var(--accent3);}
-.danger .asist-pct{color:var(--accent2);}
-.asist-info{font-size:.75rem;color:var(--muted);margin-top:.2rem;}
-.progress-wrap{background:rgba(255,255,255,.07);border-radius:999px;height:6px;overflow:hidden;margin:.7rem 0 .3rem;}
-.progress-bar{height:100%;border-radius:999px;transition:width .8s cubic-bezier(.4,0,.2,1);}
-.bar-ok{background:linear-gradient(90deg,var(--accent3),#22c55e);}
-.bar-danger{background:linear-gradient(90deg,var(--accent2),#dc2626);}
+  /* Grid layout */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
 
-/* ── PDF EXPORT ── */
-.export-bar{display:flex;align-items:center;justify-content:space-between;
-  background:var(--card);border:1px solid var(--border);border-radius:16px;
-  padding:1.1rem 1.4rem;margin-top:2rem;gap:1rem;flex-wrap:wrap;}
-.export-info{font-size:.85rem;color:var(--muted);}
-.export-info strong{color:var(--text);}
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
 
-/* ── SUMMARY CARD ── */
-.summary-card{background:rgba(79,139,255,.06);border:1.5px solid rgba(79,139,255,.2);
-  border-radius:16px;padding:1.4rem;margin-bottom:1.2rem;}
-.summary-title{font-family:var(--head);font-size:.72rem;font-weight:700;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--accent);margin-bottom:.9rem;}
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.8rem;}
-.sum-item{text-align:center;}
-.sum-val{font-family:var(--head);font-size:1.5rem;font-weight:800;}
-.sum-key{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.15rem;}
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
 
-/* ── ANIMATIONS ── */
-@keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .card-title {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-footer{text-align:center;margin-top:3rem;color:var(--muted);font-size:.72rem;opacity:.45;}
+  .card-title::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
 
-/* ──────────────────────────────────────────
-   PRINT / PDF STYLES
-──────────────────────────────────────────── */
-@media print{
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  body{background:#fff!important;color:#111!important;}
-  .noise,.no-print{display:none!important;}
-  body::before{display:none;}
-  .wrap{max-width:100%;padding:1rem 1.5rem;}
-  h1{-webkit-text-fill-color:#111!important;color:#111!important;background:none!important;}
-  .sub,.tag{color:#555!important;}
-  header .tag{border-color:#aaa!important;}
-  .card,.ramo-card,.ramo-result,.asist-result,.summary-card,.export-bar{
-    background:#f8f8f8!important;border-color:#ddd!important;page-break-inside:avoid;}
-  .ramo-result.ok{background:#f0fff6!important;border-color:#6ee7b7!important;}
-  .ramo-result.warn{background:#fffbeb!important;border-color:#fcd34d!important;}
-  .ramo-result.danger{background:#fff1f1!important;border-color:#fca5a5!important;}
-  .asist-result.ok{background:#f0fff6!important;border-color:#6ee7b7!important;}
-  .asist-result.danger{background:#fff1f1!important;border-color:#fca5a5!important;}
-  .rr-prom,.asist-pct{color:#111!important;}
-  .ok .rr-prom,.ok .asist-pct{color:#059669!important;}
-  .warn .rr-prom{color:#d97706!important;}
-  .danger .rr-prom,.danger .asist-pct{color:#dc2626!important;}
-  .pill-ok{background:#d1fae5!important;color:#059669!important;}
-  .pill-warn{background:#fef3c7!important;color:#d97706!important;}
-  .pill-danger{background:#fee2e2!important;color:#dc2626!important;}
-  .rr-sub,.rr-details,.ramo-summary,.asist-info,.summary-title,.sum-key{color:#555!important;}
-  .rr-details strong,.sum-val,.ramo-name-display,.section-title,.rr-name{color:#111!important;}
-  input,label,.btn,.add-nota-btn,.btn-row,.ramo-del,.chevron,.card-label::after,
-  .notas-wrap,.name-row,.ramos-list .ramo-body,.section-header .btn{display:none!important;}
-  .ramo-card{border:1px solid #ddd!important;}
-  .ramo-body{display:block!important;}
-  .card-label{color:#555!important;}
-  .progress-bar{background:#059669!important;}
-  .summary-card{background:#eff6ff!important;border-color:#bfdbfe!important;}
-  .sum-val{color:#1d4ed8!important;}
-  .export-bar{display:none!important;}
-  .result-section{display:block!important;}
-  footer{color:#aaa!important;}
-  .pdf-header{display:block!important;}
-}
-.pdf-header{display:none;margin-bottom:1.5rem;padding-bottom:.8rem;border-bottom:2px solid #ddd;}
-.pdf-header h2{font-size:1.1rem;font-weight:700;color:#111;}
-.pdf-header p{font-size:.82rem;color:#555;}
+  /* Input groups */
+  .input-group {
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 0.7rem 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  input[type="number"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,200,74,0.12);
+  }
+
+  /* Slider */
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+  .slider-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 2.5rem;
+    text-align: right;
+  }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    background: var(--accent);
+    color: #0f0f13;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 0.5rem;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(232,200,74,0.3);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  /* Formula cards */
+  .formula-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  @media (max-width: 640px) { .formula-grid { grid-template-columns: 1fr; } }
+
+  .formula-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+
+  .formula-box h3 {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .formula-box h3 .icon {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+  }
+
+  .formula-box h3 .icon.excel { background: rgba(74,200,74,0.15); color: #4ae87a; }
+  .formula-box h3 .icon.math  { background: rgba(74,143,232,0.15); color: var(--accent2); }
+
+  .formula-display {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+    word-break: break-all;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 0.6rem; right: 0.6rem;
+    background: var(--border);
+    border: none;
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .copy-btn:hover { background: var(--accent); color: #0f0f13; }
+
+  .math-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent2);
+    line-height: 2;
+  }
+
+  .math-formula .var { color: var(--accent); }
+  .math-formula .op  { color: var(--muted); }
+  .math-formula .eq  { color: var(--text); font-weight: 700; }
+
+  /* Results */
+  .results-section {
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .results-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  .stat-pill span { color: var(--accent); font-weight: 700; }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  thead tr {
+    background: var(--surface2);
+  }
+
+  th {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.65rem 1rem;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    white-space: nowrap;
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .nota-cell {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .nota-pass { color: var(--pass-color); }
+  .nota-fail { color: var(--fail-color); }
+
+  .bar-cell { width: 160px; }
+
+  .bar-bg {
+    background: var(--border);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .pct-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .pct-pass { background: rgba(74,232,160,0.12); color: var(--success); }
+  .pct-fail { background: rgba(232,74,107,0.12); color: var(--danger); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+
+  .empty .icon-big { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .highlight { color: var(--accent); }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.8rem 0;
+  }
 </style>
 </head>
 <body>
-<div class="noise"></div>
-<div class="wrap">
+<div class="wrapper">
 
-<!-- PDF header (only visible on print) -->
-<div class="pdf-header" id="pdf-header">
-  <h2>Diagnóstico Académico</h2>
-  <p id="pdf-meta"></p>
-</div>
+  <!-- Header -->
+  <header>
+    <div class="badge">🇨🇱 Sistema de Calificación Chileno</div>
+    <h1>Escala de<br><span>Notas</span></h1>
+    <p class="subtitle">Generador de tabla de conversión · Escala 1.0 – 7.0</p>
+  </header>
 
-<header>
-  <div class="tag">🎓 Calculadora Académica</div>
-  <h1>Diagnóstico académico<br>completo</h1>
-  <p class="sub">Promedio ponderado · Asistencia 75% · Exención ≥ 5.0 · Nota aprobatoria examen</p>
-</header>
+  <!-- Config + Params -->
+  <div class="grid">
+    <!-- Configuración -->
+    <div class="card">
+      <div class="card-title">Configuración</div>
 
-<!-- NOMBRE -->
-<div class="name-row no-print">
-  <div class="field">
-    <label>Nombre del estudiante</label>
-    <input type="text" id="student-name" placeholder="Ingresa tu nombre completo">
-  </div>
-</div>
+      <div class="input-group">
+        <label>Puntaje máximo (total de preguntas / puntos)</label>
+        <input type="number" id="puntajeMax" value="40" min="1" max="1000">
+      </div>
 
-<!-- ══════════════════════════════════════
-     ASISTENCIA
-══════════════════════════════════════ -->
-<div class="card no-print">
-  <div class="card-label">📋 Asistencia por ramo</div>
-  <div id="asist-ramos-list" class="ramos-list"></div>
-  <div class="btn-row">
-    <button class="btn btn-ghost btn-sm" onclick="addAsistRamo()">＋ Agregar ramo</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     NOTAS
-══════════════════════════════════════ -->
-<div class="card no-print">
-  <div class="card-label">📝 Notas ponderadas por ramo</div>
-  <div id="notas-ramos-list" class="ramos-list"></div>
-  <div class="btn-row">
-    <button class="btn btn-ghost btn-sm" onclick="addNotasRamo()">＋ Agregar ramo</button>
-  </div>
-</div>
-
-<!-- CALCULAR -->
-<div class="btn-row no-print" style="margin-top:1.4rem;">
-  <button class="btn btn-primary" style="flex:2" onclick="calcular()">⚡ Calcular diagnóstico completo</button>
-  <button class="btn btn-ghost" style="flex:1" onclick="resetTodo()">↺ Limpiar todo</button>
-</div>
-
-<!-- ══════════════════════════════════════
-     RESULTADOS
-══════════════════════════════════════ -->
-<div class="result-section" id="results" style="display:none;">
-
-  <div class="summary-card" id="summary-card"></div>
-
-  <div style="margin-bottom:1rem;">
-    <div class="section-header">
-      <span class="section-title">📋 Asistencia</span>
-      <span class="section-badge badge-blue">Mínimo 75%</span>
+      <div class="input-group">
+        <label>Exigencia — porcentaje mínimo para aprobar</label>
+        <div class="slider-wrap">
+          <input type="range" id="exigenciaSlider" min="30" max="95" value="60" step="1"
+            oninput="document.getElementById('exigenciaNum').value=this.value; document.getElementById('exigenciaDisp').textContent=this.value+'%'">
+          <span class="slider-val" id="exigenciaDisp">60%</span>
+        </div>
+        <input type="number" id="exigenciaNum" value="60" min="30" max="95" style="margin-top:0.5rem"
+          oninput="document.getElementById('exigenciaSlider').value=this.value; document.getElementById('exigenciaDisp').textContent=this.value+'%'">
+      </div>
     </div>
-    <div id="res-asistencia"></div>
-  </div>
 
-  <div>
-    <div class="section-header">
-      <span class="section-title">📝 Notas y examen</span>
-      <span class="section-badge badge-red">Exención ≥ 5.0</span>
+    <!-- Notas -->
+    <div class="card">
+      <div class="card-title">Escala de notas</div>
+
+      <div class="input-group">
+        <label>Nota mínima (al obtener 0 puntos)</label>
+        <input type="number" id="notaMin" value="1.0" min="1.0" max="3.9" step="0.1">
+      </div>
+
+      <div class="input-group">
+        <label>Nota de aprobación</label>
+        <input type="number" id="notaApro" value="4.0" min="1.1" max="6.9" step="0.1">
+      </div>
+
+      <div class="input-group">
+        <label>Nota máxima (escala chilena)</label>
+        <input type="number" id="notaMax" value="7.0" min="5.0" max="7.0" step="0.1" disabled
+          style="opacity:0.5; cursor:not-allowed">
+      </div>
+
+      <button class="btn" onclick="generar()">⚡ Generar escala</button>
     </div>
-    <div class="result-grid" id="res-notas"></div>
   </div>
 
-  <div class="export-bar no-print">
-    <div class="export-info"><strong>¿Listo?</strong> Descarga tu diagnóstico completo en PDF.</div>
-    <button class="btn btn-green btn-sm" onclick="exportPDF()">📄 Descargar PDF</button>
+  <!-- Fórmulas -->
+  <div class="formula-grid">
+    <div class="formula-box">
+      <h3><span class="icon excel">XL</span>Fórmula Excel</h3>
+      <div class="formula-display" id="formulaExcel" style="padding-right:3.5rem">
+        — presiona generar —
+        <button class="copy-btn" onclick="copiar('formulaExcel')">copiar</button>
+      </div>
+    </div>
+    <div class="formula-box">
+      <h3><span class="icon math">∑</span>Fórmula Matemática</h3>
+      <div id="formulaMath" class="math-formula">
+        — presiona generar —
+      </div>
+    </div>
   </div>
-</div>
 
-<footer>Calculadora Académica · Asistencia 75% · Exención promedio ≥ 5.0 · Aprobación con examen ≥ nota calculada</footer>
+  <!-- Tabla -->
+  <div class="results-section">
+    <div class="results-header">
+      <h2>Tabla de conversión</h2>
+    </div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Puntaje</th>
+            <th>% Logro</th>
+            <th>Nota</th>
+            <th>Estado</th>
+            <th class="bar-cell">Barra</th>
+          </tr>
+        </thead>
+        <tbody id="tablaCuerpo">
+          <tr>
+            <td colspan="6">
+              <div class="empty">
+                <div class="icon-big">📊</div>
+                Configura los parámetros y presiona <strong>Generar escala</strong>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════
-let asistRamos = [];
-let notasRamos = [];
-let asistId = 0;
-let notasId = 0;
-
-// ═══════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════
-function init(){
-  addAsistRamo();
-  addNotasRamo();
+function redondear(n, dec = 1) {
+  return Math.round(n * Math.pow(10, dec)) / Math.pow(10, dec);
 }
 
-// ═══════════════════════════════════════════
-//  ASISTENCIA RAMOS
-// ═══════════════════════════════════════════
-function addAsistRamo(){
-  const id = ++asistId;
-  asistRamos.push(id);
-  const list = document.getElementById('asist-ramos-list');
-  const div = document.createElement('div');
-  div.className = 'ramo-card open';
-  div.id = 'ar-'+id;
-  div.innerHTML = `
-    <div class="ramo-header" onclick="toggleRamo('ar-${id}')">
-      <div class="ramo-num">${asistRamos.length}</div>
-      <div>
-        <div class="ramo-name-display" id="ar-name-disp-${id}">Ramo ${asistRamos.length}</div>
-        <div class="ramo-summary" id="ar-summary-${id}"></div>
-      </div>
-      <span class="chevron">▼</span>
-    </div>
-    ${asistRamos.length>1?`<button class="ramo-del" onclick="delAsistRamo(${id},event)">✕</button>`:''}
-    <div class="ramo-body">
-      <div class="grid">
-        <div class="field">
-          <label>Nombre del ramo</label>
-          <input type="text" id="ar-nombre-${id}" placeholder="Ej: Matemáticas" oninput="updateAsistDisplay(${id})">
-        </div>
-        <div class="field">
-          <label>Total clases realizadas</label>
-          <input type="number" id="ar-total-${id}" placeholder="Ej: 40" min="1" oninput="updateAsistDisplay(${id})">
-        </div>
-        <div class="field">
-          <label>Clases asistidas</label>
-          <input type="number" id="ar-asist-${id}" placeholder="Ej: 28" min="0" oninput="updateAsistDisplay(${id})">
-        </div>
-        <div class="field">
-          <label>Clases restantes en el semestre</label>
-          <input type="number" id="ar-rest-${id}" placeholder="Ej: 10" min="0" oninput="updateAsistDisplay(${id})">
-          <span class="hint">Clases que aún no se realizan</span>
-        </div>
-      </div>
-    </div>`;
-  list.appendChild(div);
-}
-
-function delAsistRamo(id, e){
-  e && e.stopPropagation();
-  asistRamos = asistRamos.filter(x=>x!==id);
-  document.getElementById('ar-'+id).remove();
-  renumberRamos('ar-', asistRamos);
-}
-
-function updateAsistDisplay(id){
-  const nombre = document.getElementById('ar-nombre-'+id).value || ('Ramo '+id);
-  document.getElementById('ar-name-disp-'+id).textContent = nombre;
-  const t = parseFloat(document.getElementById('ar-total-'+id).value)||0;
-  const a = parseFloat(document.getElementById('ar-asist-'+id).value)||0;
-  if(t>0){
-    const pct = (a/t*100).toFixed(1);
-    document.getElementById('ar-summary-'+id).textContent = pct+'% asistencia actual';
-  }
-}
-
-// ═══════════════════════════════════════════
-//  NOTAS RAMOS
-// ═══════════════════════════════════════════
-function addNotasRamo(){
-  const id = ++notasId;
-  notasRamos.push({id, notas:[]});
-  const list = document.getElementById('notas-ramos-list');
-  const div = document.createElement('div');
-  div.className = 'ramo-card open';
-  div.id = 'nr-'+id;
-  div.innerHTML = `
-    <div class="ramo-header" onclick="toggleRamo('nr-${id}')">
-      <div class="ramo-num">${notasRamos.length}</div>
-      <div>
-        <div class="ramo-name-display" id="nr-name-disp-${id}">Ramo ${notasRamos.length}</div>
-        <div class="ramo-summary" id="nr-summary-${id}">Sin notas</div>
-      </div>
-      <span class="chevron">▼</span>
-    </div>
-    ${notasRamos.length>1?`<button class="ramo-del" onclick="delNotasRamo(${id},event)">✕</button>`:''}
-    <div class="ramo-body">
-      <div class="field">
-        <label>Nombre del ramo</label>
-        <input type="text" id="nr-nombre-${id}" placeholder="Ej: Física" oninput="updateNotasDisplay(${id})">
-      </div>
-      <div class="notas-wrap">
-        <table class="notas-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Nombre evaluación</th>
-              <th>Nota (1–7)</th>
-              <th>Ponderación (%)</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="notas-tbody-${id}"></tbody>
-        </table>
-        <button class="add-nota-btn" onclick="addNota(${id})">＋ Agregar evaluación</button>
-      </div>
-    </div>`;
-  list.appendChild(div);
-  addNota(id);
-}
-
-function addNota(ramoId){
-  const tbody = document.getElementById('notas-tbody-'+ramoId);
-  const n = tbody.rows.length + 1;
-  const tr = document.createElement('tr');
-  tr.id = 'nota-row-'+ramoId+'-'+n;
-  tr.innerHTML = `
-    <td style="color:var(--muted);font-size:.8rem;font-weight:600;">${n}</td>
-    <td><input type="text" id="ne-${ramoId}-${n}" placeholder="Ej: Prueba 1"></td>
-    <td><input type="number" id="nn-${ramoId}-${n}" placeholder="4.5" min="1" max="7" step="0.1" oninput="updateNotasDisplay(${ramoId})"></td>
-    <td><input type="number" id="np-${ramoId}-${n}" placeholder="30" min="0" max="100" step="1" oninput="updateNotasDisplay(${ramoId})"></td>
-    <td><button class="del-nota" onclick="delNota(this,'${ramoId}')">✕</button></td>`;
-  tbody.appendChild(tr);
-}
-
-function delNota(btn, ramoId){
-  const tbody = document.getElementById('notas-tbody-'+ramoId);
-  if(tbody.rows.length <= 1) return;
-  btn.closest('tr').remove();
-  // Renumber
-  Array.from(tbody.rows).forEach((r,i)=>{r.cells[0].textContent=i+1;});
-  updateNotasDisplay(parseInt(ramoId));
-}
-
-function delNotasRamo(id, e){
-  e && e.stopPropagation();
-  notasRamos = notasRamos.filter(x=>x.id!==id);
-  document.getElementById('nr-'+id).remove();
-  renumberRamos('nr-', notasRamos.map(x=>x.id));
-}
-
-function updateNotasDisplay(id){
-  const nombre = document.getElementById('nr-nombre-'+id).value || ('Ramo '+id);
-  document.getElementById('nr-name-disp-'+id).textContent = nombre;
-  const {prom, totalPond, pendPond} = calcPromRamo(id);
-  const el = document.getElementById('nr-summary-'+id);
-  if(prom !== null){
-    const pendStr = pendPond > 0 ? ` · ${pendPond.toFixed(0)}% pendiente` : '';
-    el.textContent = 'Promedio actual: '+prom.toFixed(2)+' ('+totalPond.toFixed(0)+'% ingresado'+pendStr+')';
-  } else if(pendPond > 0){
-    el.textContent = pendPond.toFixed(0)+'% declarado sin notas aún';
+function calcularNota(puntaje, pMax, exigencia, nMin, nApro, nMax) {
+  const pApro = Math.ceil(pMax * (exigencia / 100));
+  if (puntaje < pApro) {
+    // tramo inferior: nMin a nApro
+    return redondear(nMin + (puntaje / pApro) * (nApro - nMin));
   } else {
-    el.textContent = 'Sin notas ingresadas';
+    // tramo superior: nApro a nMax
+    return redondear(nApro + ((puntaje - pApro) / (pMax - pApro)) * (nMax - nApro));
   }
 }
 
-function calcPromRamo(id){
-  // Returns:
-  //   sumaTotal  = suma(nota * pond) para notas ingresadas
-  //   pondIngresada = suma de ponderaciones con nota
-  //   pondTotal  = suma de TODAS las ponderaciones declaradas (con o sin nota)
-  //   notas[]    = evaluaciones con nota
-  //   pendientes[] = evaluaciones sin nota pero con ponderación
-  const tbody = document.getElementById('notas-tbody-'+id);
-  if(!tbody) return null;
-  let sumaTotal=0, pondIngresada=0, pondTotal=0;
-  const notas=[], pendientes=[];
-  Array.from(tbody.rows).forEach((r,i)=>{
-    const idx = i+1;
-    const nombreEv = (document.getElementById('ne-'+id+'-'+idx)?.value||'').trim() || ('Ev.'+idx);
-    const notaRaw  = (document.getElementById('nn-'+id+'-'+idx)?.value||'').trim();
-    const pondRaw  = (document.getElementById('np-'+id+'-'+idx)?.value||'').trim();
-    const pond = parseFloat(pondRaw);
-    if(isNaN(pond)||pond<=0) return; // fila sin ponderación → ignorar
-    pondTotal += pond;
-    const nota = parseFloat(notaRaw);
-    if(notaRaw!==''&&!isNaN(nota)){
-      sumaTotal    += nota*pond;
-      pondIngresada+= pond;
-      notas.push({nombreEv,nota,pond});
-    } else {
-      pendientes.push({nombreEv,pond});
-    }
+function generar() {
+  const pMax    = parseInt(document.getElementById('puntajeMax').value) || 40;
+  const exig    = parseFloat(document.getElementById('exigenciaNum').value) || 60;
+  const nMin    = parseFloat(document.getElementById('notaMin').value) || 1.0;
+  const nApro   = parseFloat(document.getElementById('notaApro').value) || 4.0;
+  const nMax    = 7.0;
+  const pApro   = Math.ceil(pMax * (exig / 100));
+
+  // ── Fórmula Excel ──────────────────────────────────────
+  // A1 = puntaje
+  const fExcel =
+    `=SI(A1<${pApro},` +
+    `REDONDEAR(${nMin}+(A1/${pApro})*${(nApro-nMin).toFixed(1)},1),` +
+    `REDONDEAR(${nApro}+((A1-${pApro})/${pMax-pApro})*${(nMax-nApro).toFixed(1)},1))`;
+
+  document.getElementById('formulaExcel').childNodes[0].textContent = fExcel;
+
+  // ── Fórmula matemática ─────────────────────────────────
+  document.getElementById('formulaMath').innerHTML = `
+<b style="color:var(--text)">Sea:</b>
+  <span class="var">p</span> <span class="op">=</span> puntaje obtenido
+  <span class="var">P</span> <span class="op">=</span> ${pMax} (puntaje máximo)
+  <span class="var">E</span> <span class="op">=</span> ${exig}% (exigencia)
+  <span class="var">p*</span> <span class="op">=</span> ⌈P × E⌉ <span class="op">=</span> ${pApro} (puntaje de aprobación)
+
+<b style="color:var(--text)">Si <span class="var">p</span> < <span class="var">p*</span>:</b>
+  N <span class="eq">=</span> ${nMin.toFixed(1)} + <span class="var">p</span>/<span class="var">p*</span> × ${(nApro-nMin).toFixed(1)}
+
+<b style="color:var(--text)">Si <span class="var">p</span> ≥ <span class="var">p*</span>:</b>
+  N <span class="eq">=</span> ${nApro.toFixed(1)} + (<span class="var">p</span> − ${pApro}) / (${pMax} − ${pApro}) × ${(nMax-nApro).toFixed(1)}`;
+
+  // ── Tabla ───────────────────────────────────────────────
+  const tbody = document.getElementById('tablaCuerpo');
+  tbody.innerHTML = '';
+
+  let aprobados = 0;
+  for (let p = 0; p <= pMax; p++) {
+    const pct  = (p / pMax * 100).toFixed(1);
+    const nota = calcularNota(p, pMax, exig, nMin, nApro, nMax);
+    const pass = nota >= nApro;
+    if (pass) aprobados++;
+
+    const barPct = ((nota - nMin) / (nMax - nMin) * 100).toFixed(1);
+    const barColor = pass ? 'var(--pass-color)' : 'var(--fail-color)';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${p}</td>
+      <td>${p} / ${pMax}</td>
+      <td>
+        <span class="pct-badge ${pass ? 'pct-pass' : 'pct-fail'}">${pct}%</span>
+      </td>
+      <td class="nota-cell ${pass ? 'nota-pass' : 'nota-fail'}">${nota.toFixed(1)}</td>
+      <td style="color:${pass ? 'var(--success)' : 'var(--danger)'}; font-size:0.8rem; font-weight:700">
+        ${pass ? '✓ Aprobado' : '✗ Reprobado'}
+      </td>
+      <td class="bar-cell">
+        <div class="bar-bg">
+          <div class="bar-fill" style="width:${barPct}%; background:${barColor}"></div>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  // ── Stats ───────────────────────────────────────────────
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-pill">Puntaje máx: <span>${pMax}</span></div>
+    <div class="stat-pill">Exigencia: <span>${exig}%</span></div>
+    <div class="stat-pill">Puntaje aprobación: <span>${pApro}</span></div>
+    <div class="stat-pill">Nota mín: <span>${nMin.toFixed(1)}</span></div>
+    <div class="stat-pill">Nota aprobación: <span>${nApro.toFixed(1)}</span></div>
+    <div class="stat-pill">Total puntajes: <span>${pMax + 1}</span></div>`;
+}
+
+function copiar(id) {
+  const el = document.getElementById(id);
+  const text = el.childNodes[0].textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = el.querySelector('.copy-btn');
+    btn.textContent = '✓ copiado';
+    setTimeout(() => btn.textContent = 'copiar', 1500);
   });
-  if(pondTotal===0) return null;
-  // Promedio sobre pondTotal (notas faltantes cuentan como 0 en la suma)
-  const promedio = sumaTotal / pondTotal;
-  return {promedio, sumaTotal, pondIngresada, pondTotal, notas, pendientes};
 }
 
-// ═══════════════════════════════════════════
-//  TOGGLE / RENUMBER
-// ═══════════════════════════════════════════
-function toggleRamo(id){
-  document.getElementById(id).classList.toggle('open');
-}
-
-function renumberRamos(prefix, ids){
-  ids.forEach((id,i)=>{
-    const numEl = document.querySelector('#'+prefix+id+' .ramo-num');
-    if(numEl) numEl.textContent = i+1;
-  });
-}
-
-// ═══════════════════════════════════════════
-//  CALCULAR
-// ═══════════════════════════════════════════
-function calcular(){
-  // ── Asistencia ──
-  const resAsist = document.getElementById('res-asistencia');
-  resAsist.innerHTML = '';
-  let asistOk=0, asistTotal=0;
-
-  asistRamos.forEach(id=>{
-    const nombre = document.getElementById('ar-nombre-'+id)?.value||('Ramo '+id);
-    const total  = parseFloat(document.getElementById('ar-total-'+id)?.value)||0;
-    const asist  = parseFloat(document.getElementById('ar-asist-'+id)?.value)||0;
-    const rest   = parseFloat(document.getElementById('ar-rest-'+id)?.value)||0;
-    if(total===0) return;
-    asistTotal++;
-    const totalSem   = total+rest;
-    const pctActual  = asist/total*100;
-    const pctFinal   = asist/totalSem*100;
-    const clasesMin  = Math.ceil(totalSem*0.75);
-    const necesita   = Math.max(0,clasesMin-asist);
-    const puedeFalt  = Math.max(0,asist+rest-clasesMin);
-    const ok         = necesita<=rest;
-    if(ok) asistOk++;
-    const estado     = ok?'ok':'danger';
-    const barClass   = ok?'bar-ok':'bar-danger';
-    const div = document.createElement('div');
-    div.className = 'asist-result '+estado;
-    div.innerHTML = `
-      <div class="asist-name">${nombre}</div>
-      <div class="asist-pct">${pctActual.toFixed(1)}% <span style="font-size:.9rem;font-weight:400;color:var(--muted)">actual</span></div>
-      <div class="progress-wrap"><div class="progress-bar ${barClass}" style="width:0" data-w="${Math.min(pctActual,100)}"></div></div>
-      <div class="asist-info">Proyección final: <strong>${pctFinal.toFixed(1)}%</strong> · ${ok
-        ?`Puedes faltar <strong>${puedeFalt}</strong> clase(s) más`
-        :`Necesitas asistir a <strong>${necesita}</strong> clase(s) más`}</div>`;
-    resAsist.appendChild(div);
-  });
-
-  setTimeout(()=>{
-    document.querySelectorAll('.progress-bar[data-w]').forEach(b=>{b.style.width=b.dataset.w+'%';});
-  },60);
-
-  // ── Notas ──
-  const resNotas = document.getElementById('res-notas');
-  resNotas.innerHTML='';
-  let eximidos=0, conExamen=0, notasTotal=0;
-
-  notasRamos.forEach(({id})=>{
-    const nombre = document.getElementById('nr-nombre-'+id)?.value||('Ramo '+id);
-    const r = calcPromRamo(id);
-    if(!r) return; // sin datos
-    notasTotal++;
-
-    const {promedio, sumaTotal, pondTotal, notas, pendientes} = r;
-    // promedio = sumaTotal/pondTotal  (notas vacías cuentan como 0)
-    // Para eximirse: promedio final >= 5.0
-    //   sumaTotal + notaMin*pendPond >= 5.0*pondTotal
-    //   notaMin = (5.0*pondTotal - sumaTotal) / pendPond
-    // Para aprobar con examen (70% presentación + 30% examen >= 4.0):
-    //   notaExamen = (4.0 - 0.70*promedio) / 0.30
-
-    const pendPond = pendientes.reduce((a,p)=>a+p.pond,0);
-    let notaMinExen=null, notaMinExamen=null, notaMinPend=null;
-    let estado, pillClass, pillText;
-
-    if(pendPond>0){
-      // Hay evaluaciones sin nota → calcular nota necesaria en ellas
-      notaMinExen  = (5.0*pondTotal - sumaTotal) / pendPond;
-      notaMinPend  = (4.0*pondTotal - sumaTotal) / pendPond; // para aprobar en notas
-    }
-
-    const promSiMax = pendPond>0 ? (sumaTotal+7.0*pendPond)/pondTotal : promedio;
-
-    if(pendPond===0){
-      // Todas las notas ingresadas
-      if(promedio>=5.0){
-        estado='ok'; pillClass='pill-ok'; pillText='✓ Eximido'; eximidos++;
-      } else if(promedio>=4.0){
-        estado='warn'; pillClass='pill-warn'; pillText='⚠ Debe rendir examen'; conExamen++;
-        notaMinExamen = (4.0 - 0.70*promedio)/0.30;
-        if(notaMinExamen<1) notaMinExamen=1;
-        if(notaMinExamen>7) notaMinExamen=null;
-      } else {
-        estado='danger'; pillClass='pill-danger'; pillText='✗ Reprueba — promedio insuficiente';
-        notaMinExamen = (4.0 - 0.70*promedio)/0.30;
-        if(notaMinExamen>7) notaMinExamen=null;
-      }
-    } else {
-      // Evaluaciones pendientes
-      if(notaMinExen<=1.0){
-        estado='ok'; pillClass='pill-ok'; pillText='✓ Exención asegurada'; eximidos++;
-        notaMinExen=null;
-      } else if(notaMinExen<=7.0){
-        estado='warn'; pillClass='pill-warn'; pillText='🎯 Puede eximirse';
-      } else if(promSiMax>=4.0){
-        estado='warn'; pillClass='pill-warn'; pillText='⚠ Exención imposible — puede aprobar';
-        conExamen++;
-        notaMinExen=null;
-      } else {
-        estado='danger'; pillClass='pill-danger'; pillText='✗ En riesgo de reprobar';
-        notaMinExen=null; notaMinPend=null;
-      }
-    }
-
-    // ── Detalle HTML ──
-    let det='';
-    det+=`Promedio actual: <strong>${promedio.toFixed(2)}</strong>`;
-    if(pendPond>0) det+=` <span style="opacity:.6">(${(pondTotal-pendPond).toFixed(0)}% de ${pondTotal.toFixed(0)}% — notas faltantes cuentan como 0)</span>`;
-    if(pendientes.length>0){
-      det+=`<br>⏳ Pendientes: <strong>${pendientes.map(p=>`${p.nombreEv} (${p.pond}%)`).join(', ')}</strong>`;
-    }
-    if(notaMinExen!==null&&notaMinExen>=1&&notaMinExen<=7){
-      det+=`<br>📌 Nota mín. p/ eximirse en ev. pendientes: <strong>${notaMinExen.toFixed(2)}</strong>`;
-    }
-    if(notaMinPend!==null&&pendPond>0&&notaMinPend>=1&&notaMinPend<=7&&estado!=='ok'){
-      det+=`<br>📌 Nota mín. en ev. pendientes p/ aprobar: <strong>${notaMinPend.toFixed(2)}</strong>`;
-    }
-    if(notaMinExamen!==null){
-      det+=`<br>📌 Nota mínima en examen p/ aprobar: <strong>${notaMinExamen.toFixed(2)}</strong>`;
-      det+=`<br><span style="font-size:.7rem;opacity:.65">70% presentación + 30% examen ≥ 4.0</span>`;
-    }
-    if(estado==='ok') det+=`<br>🎉 No necesitas rendir examen final.`;
-    if(notas.length>0){
-      det+=`<br><span style="font-size:.7rem;opacity:.55">Notas: ${notas.map(n=>`${n.nombreEv} ${n.nota.toFixed(1)} (${n.pond}%)`).join(' · ')}</span>`;
-    }
-
-    const div = document.createElement('div');
-    div.className = 'ramo-result '+estado;
-    div.innerHTML = `
-      <div class="rr-name">📚 ${nombre}</div>
-      <div class="rr-prom">${promedio.toFixed(2)}</div>
-      <div class="rr-sub">Promedio ponderado (sobre 100%)</div>
-      <span class="pill ${pillClass}">${pillText}</span>
-      <div class="rr-details">${det}</div>`;
-    resNotas.appendChild(div);
-  });
-
-  // ── Summary ──
-  const totalRamos = Math.max(asistTotal,notasTotal);
-  document.getElementById('summary-card').innerHTML=`
-    <div class="summary-title">Resumen general · ${document.getElementById('student-name').value||'Estudiante'}</div>
-    <div class="summary-grid">
-      <div class="sum-item"><div class="sum-val" style="color:var(--accent)">${totalRamos}</div><div class="sum-key">Ramos</div></div>
-      <div class="sum-item"><div class="sum-val" style="color:var(--accent3)">${asistOk}</div><div class="sum-key">Asist. OK</div></div>
-      <div class="sum-item"><div class="sum-val" style="color:var(--accent3)">${eximidos}</div><div class="sum-key">Eximidos</div></div>
-      <div class="sum-item"><div class="sum-val" style="color:var(--warn)">${conExamen}</div><div class="sum-key">Con examen</div></div>
-      <div class="sum-item"><div class="sum-val" style="color:var(--accent2)">${asistTotal-asistOk}</div><div class="sum-key">Asist. crítica</div></div>
-    </div>`;
-
-  document.getElementById('results').style.display='block';
-  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ═══════════════════════════════════════════
-//  PDF EXPORT
-// ═══════════════════════════════════════════
-function exportPDF(){
-  const name = document.getElementById('student-name').value || 'Estudiante';
-  const now = new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('pdf-meta').textContent = `Estudiante: ${name} · Generado el ${now}`;
-  window.print();
-}
-
-// ═══════════════════════════════════════════
-//  RESET
-// ═══════════════════════════════════════════
-function resetTodo(){
-  document.getElementById('student-name').value='';
-  document.getElementById('asist-ramos-list').innerHTML='';
-  document.getElementById('notas-ramos-list').innerHTML='';
-  document.getElementById('results').style.display='none';
-  asistRamos=[]; notasRamos=[]; asistId=0; notasId=0;
-  init();
-}
-
-init();
+// Generar al cargar
+window.addEventListener('load', generar);
 </script>
 </body>
 </html>
