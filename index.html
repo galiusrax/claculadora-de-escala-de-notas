@@ -626,6 +626,148 @@ input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
   .eval-table { min-width:320px; font-size:.75rem; }
   .eval-table td input { font-size:.72rem; }
 }
+
+/* === FOOTER ======================================================= */
+.site-footer {
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  text-align:center;
+  font-size:.65rem;
+  color:var(--faint);
+  font-weight:600;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:.28rem .55rem;
+  padding:.55rem 1rem;
+  line-height:1.8;
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+body.app-mode .site-footer {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  z-index:90;
+  padding:.42rem 1rem;
+}
+body.app-mode .multi-table-scroll { padding-bottom:2.4rem; }
+.sep { color:var(--border); user-select:none; }
+.footer-btn {
+  color:var(--faint); font-weight:700; font-size:.65rem; cursor:pointer;
+  background:none; border:none; font-family:'Nunito',sans-serif; padding:0;
+  line-height:1; transition:color .15s; touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.footer-btn:hover { color:var(--accent); }
+@media(max-width:480px) {
+  .site-footer { font-size:.6rem; gap:.22rem .42rem; }
+  .footer-btn  { font-size:.6rem; }
+}
+
+/* === COOKIE BANNER ================================================ */
+.cookie-banner {
+  position:fixed; bottom:2.5rem; left:50%;
+  transform:translateX(-50%);
+  z-index:300;
+  width:min(500px,calc(100vw - 1.5rem));
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; box-shadow:0 8px 36px rgba(0,0,0,.2);
+  padding:.85rem 1rem; display:flex; align-items:flex-start; gap:.75rem;
+  transition:opacity .35s,transform .35s;
+}
+.cookie-banner.hidden {
+  opacity:0; transform:translateX(-50%) translateY(14px); pointer-events:none;
+}
+.ck-icon { font-size:1.4rem; flex-shrink:0; margin-top:.05rem; }
+.ck-text { flex:1; font-size:.73rem; color:var(--muted); line-height:1.55; }
+.ck-text strong { color:var(--text); }
+.ck-link {
+  color:var(--accent); font-weight:700; cursor:pointer;
+  background:none; border:none; font-family:'Nunito',sans-serif;
+  font-size:.73rem; padding:0; text-decoration:underline; touch-action:manipulation;
+}
+.ck-actions { display:flex; gap:.4rem; flex-shrink:0; align-items:flex-start; padding-top:.05rem; }
+.ck-accept {
+  background:var(--accent); color:#fff; border:none; border-radius:7px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:.73rem;
+  padding:.4rem .85rem; cursor:pointer; transition:background .15s;
+  white-space:nowrap; touch-action:manipulation;
+}
+.ck-accept:hover { background:var(--accent-s); }
+.ck-close {
+  background:var(--surface2); border:1px solid var(--border); border-radius:7px;
+  width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+  font-size:.85rem; color:var(--muted); cursor:pointer; font-weight:800;
+  font-family:'Nunito',sans-serif; transition:background .15s; touch-action:manipulation;
+}
+.ck-close:hover { background:var(--border); }
+@media(max-width:500px) {
+  .cookie-banner { flex-direction:column; gap:.5rem; }
+  .ck-actions { width:100%; }
+  .ck-accept { flex:1; text-align:center; padding:.45rem; }
+}
+
+/* === MODALES ====================================================== */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
+  z-index:400; display:flex; align-items:center; justify-content:center;
+  padding:1rem; opacity:0; pointer-events:none; transition:opacity .22s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal-box {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  box-shadow:0 16px 48px rgba(0,0,0,.22); width:100%; max-width:540px;
+  max-height:88vh; display:flex; flex-direction:column;
+  transform:translateY(18px) scale(.97); transition:transform .22s;
+}
+.modal-overlay.open .modal-box { transform:translateY(0) scale(1); }
+.modal-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.8rem 1rem; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.modal-title { font-size:.9rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:.4rem; }
+.modal-x {
+  background:var(--surface2); border:1px solid var(--border); border-radius:7px;
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  font-size:.9rem; color:var(--muted); cursor:pointer; font-weight:800;
+  font-family:'Nunito',sans-serif; transition:background .14s,color .14s;
+  touch-action:manipulation; flex-shrink:0; line-height:1;
+}
+.modal-x:hover { background:var(--fail-bg); color:var(--fail); }
+.modal-body {
+  padding:1rem 1rem .85rem; overflow-y:auto; flex:1;
+  font-size:.8rem; color:var(--muted); line-height:1.72;
+  -webkit-overflow-scrolling:touch;
+}
+.modal-body::-webkit-scrollbar { width:4px; }
+.modal-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.modal-h3 {
+  font-size:.82rem; font-weight:800; color:var(--text);
+  margin:1rem 0 .35rem; display:flex; align-items:center; gap:.4rem;
+}
+.modal-h3:first-child { margin-top:0; }
+.modal-body p { margin-bottom:.55rem; }
+.modal-body ul { padding-left:1.1rem; margin-bottom:.55rem; }
+.modal-body li { margin-bottom:.3rem; }
+.modal-foot {
+  padding:.65rem 1rem; border-top:1px solid var(--border);
+  display:flex; justify-content:flex-end; flex-shrink:0;
+}
+.modal-ok {
+  background:var(--accent); color:#fff; border:none; border-radius:8px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:.8rem;
+  padding:.45rem 1.3rem; cursor:pointer; transition:background .14s; touch-action:manipulation;
+}
+.modal-ok:hover { background:var(--accent-s); }
+.contact-email-box {
+  display:inline-flex; align-items:center; gap:.5rem; background:var(--pass-bg);
+  border:1px solid var(--accent); border-radius:9px; padding:.55rem 1rem;
+  margin:.45rem 0; font-weight:800; font-size:.84rem; color:var(--accent);
+  text-decoration:none; transition:background .15s,color .15s;
+}
+.contact-email-box:hover { background:var(--accent); color:#fff; }
 </style>
 </head>
 <body>
@@ -664,12 +806,9 @@ input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
           <input type="number" id="d-pMax" value="40" min="1" max="1000">
         </div>
         <div class="field">
-          <label>Exigencia</label>
-          <div class="slider-row">
-            <input type="range" id="d-exigSl" min="30" max="95" value="60" step="1" oninput="syncExig(this.value)">
-            <span class="slider-val" id="d-exigD">60%</span>
-          </div>
-          <input type="number" id="d-exigN" value="60" min="30" max="95" style="margin-top:.25rem" oninput="syncExigN(this.value)">
+          <label>Exigencia (%)</label>
+          <span class="hint">Rango: 30%–95%</span>
+          <input type="number" id="d-exigN" value="60" placeholder="30–95">
         </div>
         <div class="fields-2">
           <div class="field"><label>Nota mín.</label><span class="hint">Con 0 pts</span><input type="number" id="d-nMin" value="1.0" min="1.0" max="3.9" step="0.1"></div>
@@ -737,13 +876,10 @@ input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
     <div class="card">
       <div class="sec-label" style="margin-bottom:.55rem">Configuración</div>
       <div class="field"><label>Puntaje máximo</label><input type="number" id="m-pMax" value="40" min="1" max="1000"></div>
-      <div class="field"><label>Exigencia</label>
-        <div class="slider-row">
-          <input type="range" id="m-sl" min="30" max="95" value="60" step="1" oninput="syncExig(this.value)">
-          <span class="slider-val" id="m-spct">60%</span>
-        </div>
-        <!-- FIX #11: input numérico de exigencia también en mobile para mayor usabilidad -->
-        <input type="number" id="m-exigN" value="60" min="30" max="95" style="margin-top:.25rem" oninput="syncExigN(this.value)">
+      <div class="field">
+        <label>Exigencia (%)</label>
+        <span class="hint">Rango: 30%–95%</span>
+        <input type="number" id="m-exigN" value="60" placeholder="30–95">
       </div>
       <div class="fields-2">
         <div class="field"><label>Nota mínima</label><input type="number" id="m-nMin" value="1.0" min="1.0" max="3.9" step="0.1"></div>
@@ -968,18 +1104,10 @@ applyTheme();
 // ══════════════════════════════════════════════════════════════════
 let S = { pMax:40, exig:60, nMin:1.0, nApro:4.0, nMax:7.0, ready:false };
 
-function syncExig(v) {
-  v = Math.min(95, Math.max(30, parseInt(v) || 60));
-  // Desktop
-  const dSl = document.getElementById('d-exigSl'); if(dSl) dSl.value = v;
-  const dD  = document.getElementById('d-exigD');  if(dD)  dD.textContent  = v + '%';
-  const dN  = document.getElementById('d-exigN');  if(dN)  dN.value = v;
-  // Mobile
-  const mSl = document.getElementById('m-sl');     if(mSl) mSl.value = v;
-  const mPct= document.getElementById('m-spct');   if(mPct) mPct.textContent = v + '%';
-  const mN  = document.getElementById('m-exigN');  if(mN)  mN.value = v;
-}
-function syncExigN(v) { syncExig(v); }
+// syncExig: no-op — tipeo libre, validacion ocurre al presionar Calcular
+function syncExig(v) { /* sin-op */ }
+function syncExigN(v) { /* sin-op */ }
+
 
 function r1(n) { return Math.round(n * 10) / 10; }
 
@@ -1004,13 +1132,14 @@ function readParams() {
   }
 
   S.pMax  = getInt('d-pMax',  'm-pMax')  || 40;
-  S.exig  = getInt('d-exigSl','m-sl')    || 60;
+  const rawExig = getInt('d-exigN', 'm-exigN');
+  S.exig = (isNaN(rawExig) || rawExig < 30) ? 30 : rawExig > 95 ? 95 : rawExig;
   S.nMin  = getNum('d-nMin',  'm-nMin')  || 1.0;
   S.nApro = getNum('d-nApro', 'm-nApro') || 4.0;
   S.nMax  = getNum('d-nMax',  'm-nMax')  || 7.0;
 
   if (!S.pMax  || S.pMax  <= 0) S.pMax  = 40;
-  if (!S.exig  || S.exig  <= 0) S.exig  = 60;
+  // exig ya validado arriba
   if (!S.nMin  || S.nMin  <= 0) S.nMin  = 1.0;
   if (!S.nApro || S.nApro <= 0) S.nApro = 4.0;
   if (!S.nMax  || S.nMax  <= 0) S.nMax  = 7.0;
@@ -1018,17 +1147,44 @@ function readParams() {
 
 function setFormula(id, text) {
   const el = document.getElementById(id); if(!el) return;
+  // Guardar formula limpia en atributo data para que copiar() la lea directamente
+  // Esto evita cualquier contaminacion de whitespace o nodos del DOM
+  el.setAttribute('data-formula', text);
   const btn = el.querySelector('.copy-btn');
-  el.textContent = text;
+  // Limpiar y reconstruir: solo texto + boton, sin whitespace extra
+  el.innerHTML = '';
+  el.appendChild(document.createTextNode(text));
   if(btn) el.appendChild(btn);
 }
 
 function copiar(id) {
   const el = document.getElementById(id); if(!el) return;
-  const txt = el.childNodes[0]?.textContent?.trim() || '';
+  // Leer la formula desde data-formula: texto exacto, sin DOM, sin whitespace, sin surpresas
+  const txt = (el.getAttribute('data-formula') || '').trim();
+  if (!txt || txt === 'Presiona Calcular') return;
+  if (!navigator.clipboard) {
+    // Fallback para browsers sin clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = el.querySelector('.copy-btn');
+    if(btn){ btn.textContent='✓ Copiado'; setTimeout(()=>btn.textContent='copiar',2000); }
+    return;
+  }
   navigator.clipboard.writeText(txt).then(() => {
     const btn = el.querySelector('.copy-btn');
-    if(btn){ btn.textContent='✓'; setTimeout(()=>btn.textContent='copiar',1500); }
+    if(btn){ btn.textContent='✓ Copiado'; setTimeout(()=>btn.textContent='copiar',2000); }
+  }).catch(() => {
+    // Fallback si clipboard falla (p.ej. HTTP sin permisos)
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = el.querySelector('.copy-btn');
+    if(btn){ btn.textContent='✓ Copiado'; setTimeout(()=>btn.textContent='copiar',2000); }
   });
 }
 
@@ -1082,7 +1238,15 @@ function generar() {
   const dPos  = (nMax - nApro).toFixed(1);
   const dPts  = pMax - pApro;
 
-  const fx = `=SI(A1<${pApro},REDONDEAR(${nMin.toFixed(1)}+(A1/${pApro})*${dNeg},1),REDONDEAR(${nApro.toFixed(1)}+((A1-${pApro})/${dPts})*${dPos},1))`;
+  // Formatear numero sin decimales .0 innecesarios (invalidos en Excel espanol)
+  const nMinFx  = parseFloat(nMin)  % 1 === 0 ? Math.floor(parseFloat(nMin))  : parseFloat(nMin);
+  const nAproFx = parseFloat(nApro) % 1 === 0 ? Math.floor(parseFloat(nApro)) : parseFloat(nApro);
+  const dNegFx  = parseFloat(dNeg)  % 1 === 0 ? Math.floor(parseFloat(dNeg))  : parseFloat(dNeg);
+  const dPosFx  = parseFloat(dPos)  % 1 === 0 ? Math.floor(parseFloat(dPos))  : parseFloat(dPos);
+  // VALOR(A1) convierte A1 a numero aunque este formateado como texto,
+  // evitando el error #!VALOR! cuando el puntaje se ingresa como texto.
+  // SI(A1="";"") retorna vacio si la celda esta en blanco.
+  const fx = `=SI(A1="";"";SI(VALOR(A1)<${pApro};REDONDEAR(${nMinFx}+(VALOR(A1)/${pApro})*${dNegFx};1);REDONDEAR(${nAproFx}+((VALOR(A1)-${pApro})/${dPts})*${dPosFx};1)))`;
   setFormula('d-fExcel', fx);
   setFormula('m-fxExcel', fx);
 
@@ -1151,6 +1315,11 @@ function descargarExcel() {
   const { pMax, exig, nMin, nApro, nMax } = S;
   const pApro=Math.ceil(pMax*(exig/100));
   const dNeg=(nApro-nMin).toFixed(1); const dPos=(nMax-nApro).toFixed(1); const dPts=pMax-pApro;
+  // Mismos valores sin decimales .0 para Excel espanol
+  const nMinFx2  = parseFloat(nMin)  % 1 === 0 ? Math.floor(parseFloat(nMin))  : parseFloat(nMin);
+  const nAproFx2 = parseFloat(nApro) % 1 === 0 ? Math.floor(parseFloat(nApro)) : parseFloat(nApro);
+  const dNegFx2  = parseFloat(dNeg)  % 1 === 0 ? Math.floor(parseFloat(dNeg))  : parseFloat(dNeg);
+  const dPosFx2  = parseFloat(dPos)  % 1 === 0 ? Math.floor(parseFloat(dPos))  : parseFloat(dPos);
   const wb=XLSX.utils.book_new(), rows=[];
   rows.push(['PARÁMETROS','']); rows.push(['Puntaje máximo',pMax]);
   rows.push(['Exigencia (%)',exig]); rows.push(['Nota mínima',nMin]);
@@ -1159,7 +1328,7 @@ function descargarExcel() {
   rows.push(['#','Nombre alumno/a','Puntaje','Nota']);
   for(let i=1;i<=35;i++){
     const r=9+i;
-    rows.push([i,'','',{f:`=IF(C${r}="","",IF(C${r}<${pApro},ROUND(${nMin}+(C${r}/${pApro})*${dNeg},1),ROUND(${nApro}+((C${r}-${pApro})/${dPts})*${dPos},1)))`}]);
+    rows.push([i,'','',{f:`=SI(C${r}="";"";SI(VALOR(C${r})<${pApro};REDONDEAR(${nMinFx2}+(VALOR(C${r})/${pApro})*${dNegFx2};1);REDONDEAR(${nAproFx2}+((VALOR(C${r})-${pApro})/${dPts})*${dPosFx2};1)))`}]);
   }
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws['!cols']=[{wch:4},{wch:26},{wch:14},{wch:10}];
@@ -1505,6 +1674,209 @@ window.addEventListener('resize', () => {
     document.body.classList.remove('app-mode');
   }
 });
+
+// ================================================================
+// FOOTER MODALS & COOKIE BANNER
+// ================================================================
+
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden'; // prevent body scroll while modal open
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  // Restore scroll only if no other modals are open
+  if (!document.querySelector('.modal-overlay.open')) {
+    document.body.style.overflow = '';
+    // Re-apply app-mode scroll restriction if needed
+    if (document.body.classList.contains('app-mode')) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+}
+
+function closeModalOutside(e, id) {
+  // Close modal when clicking the dark overlay (not the box itself)
+  if (e.target === e.currentTarget) closeModal(id);
+}
+
+// Close modals with Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => {
+      closeModal(m.id);
+    });
+  }
+});
+
+// ================================================================
+// COOKIE BANNER
+// ================================================================
+
+function initCookieBanner() {
+  if (localStorage.getItem('cookies-accepted') === '1') return; // ya aceptadas
+  const banner = document.getElementById('cookie-banner');
+  if (!banner) return;
+  // Mostrar con ligero delay para que el sitio cargue primero
+  setTimeout(() => banner.classList.remove('hidden'), 1200);
+}
+
+function aceptarCookies() {
+  localStorage.setItem('cookies-accepted', '1');
+  cerrarBanner();
+}
+
+function cerrarBanner() {
+  const banner = document.getElementById('cookie-banner');
+  if (!banner) return;
+  banner.classList.add('hidden');
+  // Remover del DOM tras la animacion
+  setTimeout(() => banner.remove(), 400);
+}
+
+// Inicializar banner al cargar
+window.addEventListener('load', initCookieBanner);
 </script>
+
+<!-- ================================================================
+     FOOTER GLOBAL
+================================================================ -->
+<footer class="site-footer" id="site-footer">
+  <span>&copy; 2026 Calculadora de Escala de Notas</span>
+  <span class="sep">|</span>
+  <button type="button" class="footer-btn" onclick="openModal('modal-privacidad')">Pol&iacute;tica de Privacidad</button>
+  <span class="sep">|</span>
+  <button type="button" class="footer-btn" onclick="openModal('modal-cookies')">Cookies</button>
+  <span class="sep">|</span>
+  <button type="button" class="footer-btn" onclick="openModal('modal-terminos')">T&eacute;rminos de Uso</button>
+  <span class="sep">|</span>
+  <button type="button" class="footer-btn" onclick="openModal('modal-contacto')">Contacto</button>
+</footer>
+
+<!-- ================================================================
+     COOKIE BANNER
+================================================================ -->
+<div class="cookie-banner hidden" id="cookie-banner">
+  <span class="ck-icon">&#127850;</span>
+  <div class="ck-text">
+    <strong>Este sitio utiliza cookies.</strong> Usamos cookies para mejorar tu experiencia, recordar preferencias y obtener estad&iacute;sticas de uso an&oacute;nimas.
+    <button type="button" class="ck-link" onclick="openModal('modal-cookies')">Ver pol&iacute;tica de cookies</button>
+  </div>
+  <div class="ck-actions">
+    <button type="button" class="ck-accept" onclick="aceptarCookies()">Aceptar</button>
+    <button type="button" class="ck-close" onclick="cerrarBanner()" title="Cerrar">&times;</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL: POLITICA DE PRIVACIDAD
+================================================================ -->
+<div class="modal-overlay" id="modal-privacidad" onclick="closeModalOutside(event,'modal-privacidad')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">&#128274; Pol&iacute;tica de Privacidad</span>
+      <button type="button" class="modal-x" onclick="closeModal('modal-privacidad')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-h3">Sobre este sitio</p>
+      <p>Este sitio proporciona herramientas acad&eacute;micas para estudiantes.</p>
+      <p class="modal-h3">&#128202; Datos estad&iacute;sticos</p>
+      <p>Podemos recopilar informaci&oacute;n estad&iacute;stica an&oacute;nima mediante servicios como Google Analytics para conocer el uso de la plataforma, incluyendo p&aacute;ginas visitadas, tiempo de permanencia, navegador y dispositivo utilizado.</p>
+      <p class="modal-h3">&#128274; Datos personales</p>
+      <p>No recopilamos nombres, contrase&ntilde;as, informaci&oacute;n acad&eacute;mica personal ni datos sensibles ingresados por los usuarios.</p>
+      <p class="modal-h3">&#127850; Cookies</p>
+      <p>Este sitio puede utilizar cookies para mejorar la experiencia de usuario, recordar preferencias y obtener estad&iacute;sticas de uso.</p>
+      <p class="modal-h3">&#128197; Publicidad</p>
+      <p>En el futuro, el sitio puede utilizar servicios publicitarios como Google AdSense.</p>
+      <p class="modal-h3">&#9989; Aceptaci&oacute;n</p>
+      <p>El uso del sitio implica la aceptaci&oacute;n de esta pol&iacute;tica de privacidad.</p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="modal-ok" onclick="closeModal('modal-privacidad')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL: COOKIES
+================================================================ -->
+<div class="modal-overlay" id="modal-cookies" onclick="closeModalOutside(event,'modal-cookies')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">&#127850; Uso de Cookies</span>
+      <button type="button" class="modal-x" onclick="closeModal('modal-cookies')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-h3">&#191;Qu&eacute; son las cookies?</p>
+      <p>Las cookies son peque&ntilde;os archivos de texto que los sitios web guardan en tu dispositivo para recordar informaci&oacute;n entre sesiones.</p>
+      <p class="modal-h3">Cookies que utilizamos</p>
+      <ul>
+        <li><strong>Preferencias:</strong> Recordamos tu modo claro/oscuro y configuraci&oacute;n de aceptaci&oacute;n de cookies.</li>
+        <li><strong>Estad&iacute;sticas:</strong> Podemos usar Google Analytics para conocer el uso an&oacute;nimo de la plataforma.</li>
+        <li><strong>Publicidad:</strong> En el futuro podr&iacute;amos usar Google AdSense, que utiliza cookies propias.</li>
+      </ul>
+      <p class="modal-h3">Tu control</p>
+      <p>Puedes configurar tu navegador para rechazar cookies, aunque algunas funcionalidades pueden verse afectadas. Al usar este sitio aceptas el uso de cookies seg&uacute;n lo descrito.</p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="modal-ok" onclick="closeModal('modal-cookies')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL: TERMINOS DE USO
+================================================================ -->
+<div class="modal-overlay" id="modal-terminos" onclick="closeModalOutside(event,'modal-terminos')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">&#128203; T&eacute;rminos de Uso</span>
+      <button type="button" class="modal-x" onclick="closeModal('modal-terminos')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-h3">&#127979; Prop&oacute;sito</p>
+      <p>Las calculadoras disponibles en este sitio tienen fines informativos y educativos.</p>
+      <p class="modal-h3">&#9888; Exactitud de los resultados</p>
+      <p>Los resultados entregados son estimaciones basadas en los datos ingresados por el usuario.</p>
+      <p class="modal-h3">&#128209; Responsabilidad del usuario</p>
+      <p>El usuario es responsable de verificar los resultados con los reglamentos y normativas de su instituci&oacute;n educativa.</p>
+      <p class="modal-h3">&#128683; Limitaci&oacute;n de garant&iacute;a</p>
+      <p>El sitio no garantiza la exactitud absoluta de los c&aacute;lculos para todas las universidades o programas acad&eacute;micos.</p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="modal-ok" onclick="closeModal('modal-terminos')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL: CONTACTO
+================================================================ -->
+<div class="modal-overlay" id="modal-contacto" onclick="closeModalOutside(event,'modal-contacto')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">&#9993; Contacto</span>
+      <button type="button" class="modal-x" onclick="closeModal('modal-contacto')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-h3">&#128172; Escr&iacute;benos</p>
+      <p>Si tienes dudas, sugerencias o encontraste alg&uacute;n problema con las calculadoras, puedes contactarnos directamente.</p>
+      <a href="mailto:ignacio.pshome@gmail.com" class="contact-email-box">
+        &#9993; ignacio.pshome@gmail.com
+      </a>
+      <p style="margin-top:.6rem">Intentamos responder en un plazo de 1&ndash;3 d&iacute;as h&aacute;biles.</p>
+      <p class="modal-h3">&#128202; Sobre las calculadoras</p>
+      <p>Si encuentras un error en los c&aacute;lculos, por favor ind&iacute;canos: tu universidad, el reglamento aplicable y los valores que generaron el resultado incorrecto.</p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="modal-ok" onclick="closeModal('modal-contacto')">Cerrar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
