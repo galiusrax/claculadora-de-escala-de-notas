@@ -3,767 +3,1508 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Escala de Notas · Chile</title>
+<title>Herramientas Académicas · Chile</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* ═══ TOKENS ══════════════════════════════════════════════════════ */
 :root {
-  --bg:#f5f3ef;--surface:#ffffff;--surface2:#f0ede8;--border:#ddd9d0;
-  --text:#2d2b28;--muted:#6a6560;--faint:#b0a898;
-  --accent:#5a6e48;--accent-s:#3d4a34;
-  --pass:#3a7040;--fail:#8a3a3a;--pass-bg:#eaf4ec;--fail-bg:#faecec;
-  --input-bg:#f5f3ef;--pill-bg:#ede9e2;--shadow:0 2px 12px rgba(0,0,0,.07);
+  --bg:#f5f3ef; --surface:#fff; --surface2:#f0ede8; --border:#ddd9d0;
+  --text:#2d2b28; --muted:#6a6560; --faint:#b0a898;
+  --accent:#5a6e48; --accent-s:#3d4a34;
+  --pass:#2e6e38; --fail:#8a3a3a;
+  --pass-bg:#eaf4ec; --fail-bg:#faecec;
+  --input-bg:#f5f3ef; --pill-bg:#ede9e2;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+  --blue:#3a6fc4; --warn:#b87800; --warn-bg:#fff8e6;
 }
 [data-theme="dark"] {
-  --bg:#1a1d21;--surface:#22262d;--surface2:#1e2229;--border:#2e333c;
-  --text:#d4cfc8;--muted:#6a6e78;--faint:#3e4450;
-  --accent:#6a7a5a;--accent-s:#8a9a78;
-  --pass:#6a9a6e;--fail:#9a6a6a;--pass-bg:#1c2e22;--fail-bg:#2e1c1c;
-  --input-bg:#1a1d21;--pill-bg:#1a1d21;--shadow:0 2px 12px rgba(0,0,0,.35);
+  --bg:#1a1d21; --surface:#22262d; --surface2:#1e2229; --border:#2e333c;
+  --text:#d4cfc8; --muted:#6a6e78; --faint:#3e4450;
+  --accent:#6a7a5a; --accent-s:#8a9a78;
+  --pass:#5a9a64; --fail:#9a6a6a;
+  --pass-bg:#1c2e22; --fail-bg:#2e1c1c;
+  --input-bg:#1a1d21; --pill-bg:#1a1d21;
+  --shadow:0 2px 12px rgba(0,0,0,.35);
+  --blue:#5a8fe4; --warn:#d4a020; --warn-bg:#2a2410;
 }
 
 /* ═══ RESET ═══════════════════════════════════════════════════════ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);transition:background .25s,color .25s}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
 
-/* ═══ DESKTOP — sidebar fija + main sin scroll ══════════════════════ */
-.app {
-  display: none;
-  height: 100vh;
-  overflow: hidden;
-}
-@media(min-width:721px){
-  .app { display: flex; }
-  .mob { display: none !important; }
-  body { overflow: hidden; }
+/* FIX #1: body NUNCA tiene overflow:hidden — el scroll siempre está disponible.
+   Solo la vista desktop de la escala usa layout fixed, controlado por .app-mode */
+body {
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:background .25s,color .25s;
+  overflow-x:hidden; /* solo bloquea scroll horizontal */
 }
 
-/* ── Sidebar ── */
-.sidebar {
-  width: 220px;
-  min-width: 200px;
-  flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: .9rem .85rem;
-  gap: .55rem;
-  overflow-y: auto;
-  height: 100vh;
-}
-.sidebar::-webkit-scrollbar{width:3px}
-.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-.sb-brand { display:flex; align-items:center; gap:.5rem; margin-bottom:.1rem; }
-.sb-logo {
-  width:26px;height:26px;border-radius:7px;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0;
-}
-.sb-name { font-size:.88rem;font-weight:800;color:var(--text);line-height:1.2; }
-.sb-sub  { font-size:.6rem;color:var(--faint);font-weight:600; }
-
-.sb-divider{border:none;border-top:1px solid var(--border);}
-
-.sec-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);}
-
-/* Inputs */
-.field{display:flex;flex-direction:column;gap:.18rem;}
-.field label{font-size:.7rem;font-weight:700;color:var(--muted);}
-.field .hint{font-size:.6rem;color:var(--faint);font-weight:600;}
-input[type="number"]{
-  width:100%;background:var(--input-bg);border:1px solid var(--border);
-  border-radius:7px;color:var(--text);font-family:'Nunito',sans-serif;
-  font-size:.85rem;font-weight:700;padding:.38rem .6rem;outline:none;
-  transition:border-color .2s,box-shadow .2s;-moz-appearance:textfield;
-}
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none}
-input[type="number"]:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(90,110,72,.15)}
-
-.fields-2{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
-
-/* Slider */
-.slider-row{display:flex;align-items:center;gap:.45rem;}
-input[type="range"]{flex:1;-webkit-appearance:none;height:3px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
-input[type="range"]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:14px;height:14px;background:var(--accent);
-  border:2px solid var(--surface);border-radius:50%;cursor:pointer;
-  box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .15s;
-}
-input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}
-.slider-val{font-size:.82rem;font-weight:800;color:var(--accent);min-width:2.4rem;text-align:right;}
-
-/* Buttons */
-.btn-calc{
-  width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;
-  font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:800;padding:.58rem;
-  cursor:pointer;transition:background .18s,transform .12s,box-shadow .14s;
-}
-.btn-calc:hover{background:var(--accent-s);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
-.btn-calc:active{transform:translateY(0)}
-
-.btn-dl{
-  display:flex;align-items:center;justify-content:center;gap:.3rem;
-  width:100%;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;font-family:'Nunito',sans-serif;font-size:.72rem;
-  font-weight:700;color:var(--muted);padding:.45rem;cursor:pointer;
-  transition:background .15s,color .15s;
-}
-.btn-dl:hover{background:var(--border);color:var(--text)}
-.btn-dl.disabled{opacity:.4;pointer-events:none}
-
-.theme-btn{
-  background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-  padding:.3rem .6rem;font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:700;
-  color:var(--muted);cursor:pointer;transition:background .2s;width:100%;
-}
-.theme-btn:hover{background:var(--border)}
-
-/* ── Main area ── */
-.main {
-  flex:1;
-  display:flex;
-  flex-direction:column;
+/* FIX #2: modo pantalla-completa SOLO cuando .app-mode está activo en el body */
+body.app-mode {
   overflow:hidden;
-  padding:.9rem 1rem;
-  gap:.5rem;
-  min-height:0;
+  height:100vh;
 }
 
-/* ── Fórmulas row ── */
-.fx-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;flex-shrink:0;}
+/* ═══ SLIDE SYSTEM ════════════════════════════════════════════════ */
+.slides-wrap { position:relative; }
+.slide { display:none; }
+.slide.active { display:block; }
 
-.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:.8rem .9rem;box-shadow:var(--shadow);}
-.fx-row .card{padding:.5rem .7rem;}
-
-.fx-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-bottom:.25rem;display:flex;align-items:center;gap:.3rem;}
-.fc-icon{width:15px;height:15px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:800;}
-.fc-xl{background:var(--pass-bg);color:var(--pass);}
-.fc-mt{background:#e8eaf5;color:#4a5490;}
-[data-theme="dark"] .fc-mt{background:#1e2238;color:#7a88c8;}
-
-.fx-code{
-  background:var(--input-bg);border:1px solid var(--border);border-radius:7px;
-  padding:.35rem .6rem;font-family:'Fira Code',monospace;font-size:.65rem;
-  color:var(--accent);word-break:break-all;line-height:1.4;white-space:pre-wrap;
-  position:relative;min-height:1.6rem;
+/* FIX #3: slide-acad NUNCA hereda overflow:hidden — siempre scrolleable */
+#slide-acad {
+  min-height:100vh;
+  overflow:visible;
 }
-.copy-btn{
-  position:absolute;top:.3rem;right:.3rem;background:var(--border);border:none;
-  border-radius:4px;color:var(--faint);font-size:.57rem;font-family:'Nunito',sans-serif;
-  font-weight:700;padding:.14rem .38rem;cursor:pointer;transition:background .14s,color .14s;
-}
-.copy-btn:hover{background:var(--accent);color:#fff}
-.math-block{font-family:'Fira Code',monospace;font-size:.65rem;color:var(--muted);line-height:1.55;white-space:pre-wrap;}
-.math-block .mv{color:var(--accent);font-weight:600}
-.math-block .mm{color:var(--faint)}
 
-/* ── Tabla multi-columna ── */
-.tabla-section{
-  flex:1;
-  min-height:0;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:11px;
-  box-shadow:var(--shadow);
-}
-.tabla-header{
-  padding:.6rem .9rem;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:wrap;
-  gap:.4rem;
+/* ═══ AD PLACEHOLDERS ════════════════════════════════════════════ */
+.ad-slot {
+  width:100%; min-height:60px; background:var(--surface2);
+  border:1px dashed var(--border); border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.65rem; color:var(--faint); font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase; margin:.5rem 0;
   flex-shrink:0;
 }
-.tabla-title{font-size:.82rem;font-weight:800;color:var(--text);}
-.pills{display:flex;gap:.3rem;flex-wrap:wrap;}
-.pill{
-  background:var(--pill-bg);border:1px solid var(--border);
-  border-radius:999px;padding:.14rem .5rem;font-size:.6rem;font-weight:700;color:var(--faint);
-}
-.pill b{color:var(--accent)}
+.ad-slot-sm { min-height:50px; font-size:.6rem; }
 
-/* Grid de sub-tablas */
-.multi-table-scroll{
-  flex:1;
-  overflow-y:auto;
-  padding:.65rem .75rem;
+/* ═══ SHARED COMPONENTS ══════════════════════════════════════════ */
+.card { background:var(--surface); border:1px solid var(--border);
+        border-radius:11px; padding:.8rem .9rem; box-shadow:var(--shadow); }
+.field { display:flex; flex-direction:column; gap:.2rem; }
+.field label { font-size:.72rem; font-weight:700; color:var(--muted); }
+.field .hint  { font-size:.6rem; color:var(--faint); font-weight:600; }
+input[type="number"], input[type="text"], select {
+  width:100%; background:var(--input-bg); border:1px solid var(--border);
+  border-radius:7px; color:var(--text); font-family:'Nunito',sans-serif;
+  font-size:.85rem; font-weight:700; padding:.38rem .6rem; outline:none;
+  transition:border-color .2s,box-shadow .2s; -moz-appearance:textfield;
+  /* FIX #4: touch-action permite tap/scroll sin delay en móvil */
+  touch-action:manipulation;
 }
-.multi-table-scroll::-webkit-scrollbar{width:4px}
-.multi-table-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; }
+input[type="number"]:focus,input[type="text"]:focus,select:focus {
+  border-color:var(--accent); box-shadow:0 0 0 2px rgba(90,110,72,.15); }
+input[type="checkbox"] { width:auto; accent-color:var(--accent); }
+select { appearance:none; -webkit-appearance:none; cursor:pointer; }
+.fields-2 { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; }
+.fields-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.4rem; }
+.slider-row { display:flex; align-items:center; gap:.45rem; }
+input[type="range"] { flex:1; -webkit-appearance:none; height:3px;
+  background:var(--border); border-radius:2px; outline:none; cursor:pointer; }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px; background:var(--accent);
+  border:2px solid var(--surface); border-radius:50%; cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.2); transition:transform .15s; }
+input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+.slider-val { font-size:.82rem; font-weight:800; color:var(--accent);
+              min-width:2.6rem; text-align:right; }
+.sb-divider { border:none; border-top:1px solid var(--border); }
+.sec-label { font-size:.58rem; font-weight:800; text-transform:uppercase;
+             letter-spacing:.1em; color:var(--faint); }
+.pills { display:flex; gap:.3rem; flex-wrap:wrap; }
+.pill { background:var(--pill-bg); border:1px solid var(--border);
+        border-radius:999px; padding:.14rem .5rem;
+        font-size:.6rem; font-weight:700; color:var(--faint); }
+.pill b { color:var(--accent); }
+.tag { display:inline-flex; align-items:center; gap:.25rem;
+       font-size:.68rem; font-weight:800; border-radius:6px;
+       padding:.18rem .55rem; }
+.tag-pass { background:var(--pass-bg); color:var(--pass); }
+.tag-fail { background:var(--fail-bg); color:var(--fail); }
+.tag-warn { background:var(--warn-bg); color:var(--warn); }
 
-.multi-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(115px,1fr));
-  gap:.55rem;
-  align-content:start;
+/* Buttons — FIX #5: todos los botones tienen touch-action y cursor explícito */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:.35rem;
+  border:none; border-radius:8px; font-family:'Nunito',sans-serif;
+  font-weight:800; cursor:pointer; transition:all .18s;
+  touch-action:manipulation; /* elimina delay de 300ms en móvil */
+  -webkit-tap-highlight-color:transparent; /* quita highlight azul iOS */
+  user-select:none;
+}
+.btn-primary { background:var(--accent); color:#fff; width:100%;
+               font-size:.85rem; padding:.62rem; }
+.btn-primary:hover { background:var(--accent-s); transform:translateY(-1px);
+                     box-shadow:0 4px 10px rgba(0,0,0,.18); }
+.btn-primary:active { transform:translateY(0); background:var(--accent-s); }
+.btn-ghost { background:var(--surface2); border:1px solid var(--border);
+             color:var(--muted); font-size:.78rem; padding:.5rem .9rem; }
+.btn-ghost:hover { background:var(--border); color:var(--text); }
+.btn-ghost.disabled { opacity:.4; pointer-events:none; }
+.btn-nav { background:var(--accent); color:#fff;
+           font-size:.82rem; padding:.6rem 1.2rem; border-radius:10px;
+           font-weight:700; display:inline-flex; align-items:center; gap:.5rem; }
+.btn-nav:hover { background:var(--accent-s); transform:translateY(-1px); }
+.btn-nav-outline {
+  background:transparent; border:1.5px solid var(--accent);
+  color:var(--accent); font-size:.78rem; padding:.5rem 1rem;
+  border-radius:9px; font-weight:700; cursor:pointer;
+  transition:all .18s; font-family:'Nunito',sans-serif;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-nav-outline:hover { background:var(--accent); color:#fff; }
+.theme-btn {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:7px; padding:.3rem .6rem; font-family:'Nunito',sans-serif;
+  font-size:.7rem; font-weight:700; color:var(--muted); cursor:pointer;
+  transition:background .2s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.theme-btn:hover { background:var(--border); }
+
+/* ═══ SLIDE 1: ESCALA DE NOTAS — LAYOUT ══════════════════════════
+   El layout tipo "app" (sidebar + main fijo) se activa desde >720px,
+   igual que el diseño original. Solo el slide-acad es scrolleable. */
+
+.app { display:none; height:100vh; overflow:hidden; flex-direction:column; }
+
+/* Desktop y tablet horizontal (>720px): layout app fijo */
+@media(min-width:721px) {
+  #slide-escala.active .app { display:flex; }
+  #slide-escala.active .mob { display:none !important; }
+  /* body.app-mode se aplica via JS solo cuando slide-escala está activo */
+  body.app-mode { overflow:hidden; height:100vh; }
 }
 
-.sub-table{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:8px;
-  overflow:hidden;
+/* Mobile (<=720px): vista scrolleable en columna */
+@media(max-width:720px) {
+  #slide-escala.active .mob { display:flex; }
+  #slide-escala.active .app { display:none !important; }
 }
-.sub-table table{width:100%;border-collapse:collapse;font-size:.75rem;}
-.sub-table thead th{
-  background:var(--accent);color:#fff;
-  padding:.3rem .5rem;font-size:.58rem;font-weight:800;
-  text-transform:uppercase;letter-spacing:.05em;
-  text-align:left;
-}
-.sub-table td{
-  padding:.28rem .5rem;border-top:1px solid var(--border);
-  font-weight:700;white-space:nowrap;color:var(--muted);font-size:.76rem;
-}
-.sub-table td.nota-pass{color:var(--pass);}
-.sub-table td.nota-fail{color:var(--fail);}
-.sub-table tr:hover td{background:var(--border)}
-.nota-pass{color:var(--pass);}
-.nota-fail{color:var(--fail);}
-.pts-cell{color:var(--faint);font-size:.72rem;font-weight:600;}
 
-/* Empty */
-.empty-state{text-align:center;padding:2rem 1rem;color:var(--faint);}
-.empty-state .big{font-size:1.4rem;margin-bottom:.3rem;}
-.empty-state p{font-size:.75rem;font-weight:600;}
-
-/* ── Explicación dinámica (debajo de la tabla) ── */
-.exp-section{
+/* La vista móvil siempre en columna */
+.mob {
   display:none;
+  flex-direction:column;
+  padding:1rem .9rem 4rem;
+  gap:.85rem;
+  min-height:100vh;
 }
-.exp-grid-boxes{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin:.5rem 0;}
-.tramo-box{
-  border:1px solid var(--border);border-radius:9px;
-  padding:.55rem .7rem;font-size:.7rem;line-height:1.6;color:var(--muted);
-}
-.tramo-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem;}
-.tramo-fail .tramo-label{color:var(--fail);}
-.tramo-pass .tramo-label{color:var(--pass);}
-.tramo-fail{background:var(--fail-bg);}
-.tramo-pass{background:var(--pass-bg);}
-.ej-header{display:flex;justify-content:space-between;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:.25rem 0 .1rem;}
-.ej-row{display:flex;align-items:center;gap:.5rem;padding:.3rem 0;border-top:1px solid var(--border);font-size:.7rem;}
-.ej-pts{min-width:3.4rem;font-weight:700;color:var(--faint);font-size:.67rem;}
-.ej-desc{flex:1;color:var(--muted);line-height:1.4;}
-.ej-nota{font-size:.88rem;font-weight:800;min-width:2.2rem;text-align:right;}
 
-/* ── MOBILE ── */
-.mob{display:none;}
-@media(max-width:720px){
-  body{overflow:auto;}
-  .app{display:none!important;}
-  .mob{
-    display:flex;flex-direction:column;
-    padding:1.1rem .9rem 4rem;gap:.9rem;min-height:100vh;
-  }
-  .mob .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:1.1rem;box-shadow:var(--shadow);}
-  .mob .field{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.7rem;}
-  .mob .field label{font-size:.78rem;font-weight:700;color:var(--muted);}
-  .mob input[type="number"]{
-    width:100%;background:var(--input-bg);border:1px solid var(--border);
-    border-radius:8px;color:var(--text);font-family:'Nunito',sans-serif;
-    font-size:.92rem;font-weight:700;padding:.48rem .72rem;outline:none;
-    -moz-appearance:textfield;
-  }
-  .mob input[type="number"]::-webkit-inner-spin-button,
-  .mob input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none}
-  .mob input[type="range"]{flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:3px;outline:none;cursor:pointer;}
-  .mob input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:16px;height:16px;background:var(--accent);
-    border:2.5px solid var(--surface);border-radius:50%;cursor:pointer;
-  }
-  .mob .slider-row{display:flex;align-items:center;gap:.6rem;margin-top:.2rem;}
-  .mob .slider-pct{font-size:.9rem;font-weight:800;color:var(--accent);min-width:2.8rem;text-align:right;}
-  .mob .btn-calc{
-    width:100%;background:var(--accent);color:#fff;border:none;border-radius:9px;
-    font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:800;padding:.72rem 1rem;
-    cursor:pointer;margin-top:.75rem;
-  }
-  .mob .btn-dl{
-    display:flex;align-items:center;justify-content:center;gap:.4rem;
-    background:var(--surface2);border:1px solid var(--border);border-radius:9px;
-    font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;
-    color:var(--muted);padding:.5rem .9rem;cursor:pointer;width:100%;
-  }
-  .mob .btn-dl.disabled{opacity:.45;pointer-events:none;}
-  .mob .theme-btn{
-    background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-    padding:.38rem .6rem;font-family:'Nunito',sans-serif;font-size:.76rem;font-weight:700;
-    color:var(--muted);cursor:pointer;width:auto;
-  }
-  .mob .fx-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:.55rem;display:flex;align-items:center;gap:.38rem;}
-  .mob .fc-icon{width:17px;height:17px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:800;}
-  .mob .fc-xl{background:var(--pass-bg);color:var(--pass);}
-  .mob .fc-mt{background:#e8eaf5;color:#4a5490;}
-  .mob .formula-code{
-    background:var(--input-bg);border:1px solid var(--border);border-radius:8px;
-    padding:.65rem .85rem;font-family:'Fira Code',monospace;font-size:.7rem;
-    color:var(--accent);word-break:break-all;line-height:1.7;white-space:pre-wrap;
-    position:relative;min-height:2.8rem;
-  }
-  .mob .copy-btn{
-    position:absolute;top:.38rem;right:.38rem;background:var(--border);border:none;
-    border-radius:5px;color:var(--faint);font-size:.6rem;font-family:'Nunito',sans-serif;
-    font-weight:700;padding:.16rem .42rem;cursor:pointer;
-  }
-  .mob .copy-btn:hover{background:var(--accent);color:#fff}
-  .mob .math-block{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--muted);line-height:2.1;white-space:pre-wrap;}
-  .mob .math-block .mv{color:var(--accent);font-weight:600}
-  .mob .math-block .mm{color:var(--faint)}
-  .mob .results-top{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
-  .mob .results-title{font-size:.88rem;font-weight:800;color:var(--text);}
-  .mob .pills{display:flex;gap:.35rem;flex-wrap:wrap;}
-  .mob .pill{background:var(--pill-bg);border:1px solid var(--border);border-radius:999px;padding:.16rem .55rem;font-size:.64rem;font-weight:700;color:var(--faint);}
-  .mob .pill b{color:var(--accent)}
-  .mob table{width:100%;border-collapse:collapse;font-size:.83rem;}
-  .mob thead th{background:var(--surface2);padding:.6rem .85rem;text-align:left;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);white-space:nowrap;}
-  .mob td{padding:.48rem .85rem;border-top:1px solid var(--border);white-space:nowrap;font-weight:600;color:var(--muted);}
-  .mob tr:hover td{background:var(--surface2)}
-  .mob .nota-num{font-size:.9rem;font-weight:800;}
-  .mob .pass-color{color:var(--pass);}
-  .mob .fail-color{color:var(--fail);}
-  .mob .nota-list{display:flex;flex-direction:column;gap:.3rem;}
-  .mob .nota-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:.52rem .8rem;}
-  .mob .nota-item-left{display:flex;align-items:center;gap:.6rem;}
-  .mob .nota-item-pts{font-size:.72rem;color:var(--faint);font-weight:700;min-width:3.2rem;}
-  .mob .nota-val{font-size:.95rem;font-weight:800;}
-  .mob .empty-state{text-align:center;padding:2.2rem 1rem;color:var(--faint);}
-  .mob .empty-state .big{font-size:1.6rem;margin-bottom:.35rem;}
-  .mob .empty-state p{font-size:.8rem;font-weight:600;}
-  .mob .footer-note{margin-top:1rem;font-size:.68rem;color:var(--faint);text-align:center;font-weight:600;}
-  .mob .dl-hint{font-size:.62rem;color:var(--faint);line-height:1.5;margin-top:.25rem;text-align:center;}
-  .mob .results-card{overflow:hidden;}
-  .mob .sec-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-bottom:.55rem;}
-  .mob .flag{font-size:.72rem;color:var(--faint);font-weight:700;margin-bottom:.15rem;}
+/* ═══ TOPBAR ══════════════════════════════════════════════════════ */
+.topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.5rem 1rem; background:var(--surface); border-bottom:1px solid var(--border);
+  gap:.8rem; flex-shrink:0; z-index:5; position:relative;
+}
+.tb-brand { display:flex; align-items:center; gap:.5rem; }
+.tb-logo { width:24px; height:24px; border-radius:7px; background:var(--accent);
+           display:flex; align-items:center; justify-content:center;
+           font-size:.65rem; font-weight:800; color:#fff; flex-shrink:0; }
+.tb-name { font-size:.85rem; font-weight:800; color:var(--text); }
+.tb-sub  { font-size:.58rem; color:var(--faint); font-weight:600; }
+.tb-right { display:flex; align-items:center; gap:.5rem; }
+
+/* ═══ SIDEBAR (desktop escala) ═══════════════════════════════════ */
+.app-inner { display:flex; flex:1; overflow:hidden; min-height:0; }
+.sidebar {
+  width:215px; min-width:195px; flex-shrink:0;
+  background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:.8rem .8rem; gap:.5rem;
+  overflow-y:auto; height:100%;
+}
+.sidebar::-webkit-scrollbar { width:3px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* ═══ MAIN (desktop escala) ══════════════════════════════════════ */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden;
+        padding:.8rem .9rem; gap:.45rem; min-height:0; }
+.fx-row { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; flex-shrink:0; }
+.fx-row .card { padding:.45rem .65rem; }
+.fx-label { font-size:.58rem; font-weight:800; text-transform:uppercase;
+            letter-spacing:.08em; color:var(--faint); margin-bottom:.22rem;
+            display:flex; align-items:center; gap:.28rem; }
+.fc-icon { width:14px; height:14px; border-radius:4px; display:flex;
+           align-items:center; justify-content:center; font-size:.5rem; font-weight:800; }
+.fc-xl { background:var(--pass-bg); color:var(--pass); }
+.fc-mt { background:#e8eaf5; color:#4a5490; }
+[data-theme="dark"] .fc-mt { background:#1e2238; color:#7a88c8; }
+.fx-code { background:var(--input-bg); border:1px solid var(--border);
+           border-radius:7px; padding:.3rem .55rem; font-family:'Fira Code',monospace;
+           font-size:.63rem; color:var(--accent); word-break:break-all;
+           line-height:1.35; white-space:pre-wrap; position:relative; min-height:1.5rem; }
+.copy-btn {
+  position:absolute; top:.28rem; right:.28rem; background:var(--border);
+  border:none; border-radius:4px; color:var(--faint); font-size:.55rem;
+  font-family:'Nunito',sans-serif; font-weight:700; padding:.12rem .35rem;
+  cursor:pointer; transition:background .14s,color .14s;
+  touch-action:manipulation;
+}
+.copy-btn:hover { background:var(--accent); color:#fff; }
+
+/* Math block */
+.math-block { font-family:'Nunito',sans-serif; font-size:.72rem; color:var(--muted);
+              line-height:1.5; white-space:normal; }
+.math-params { display:flex; gap:.35rem; flex-wrap:wrap; margin-bottom:.35rem; }
+.math-param { background:var(--input-bg); border:1px solid var(--border);
+              border-radius:5px; padding:.15rem .42rem;
+              font-size:.64rem; font-weight:700; color:var(--muted); }
+.math-param b { color:var(--accent); }
+.math-case { border:1px solid var(--border); border-radius:7px;
+             padding:.35rem .6rem; margin:.15rem 0; }
+.math-case-label { font-size:.58rem; font-weight:800; text-transform:uppercase;
+                   letter-spacing:.06em; margin-bottom:.2rem;
+                   display:flex; align-items:center; gap:.3rem; }
+.math-case-label.fail-label { color:var(--fail); }
+.math-case-label.pass-label { color:var(--pass); }
+.math-eq { font-family:'Fira Code',monospace; font-size:.67rem;
+           color:var(--text); line-height:1.6; }
+.math-eq .mv  { color:var(--accent); font-weight:700; }
+.math-eq .num { color:var(--pass); font-weight:700; }
+.math-eq .numf{ color:var(--fail); font-weight:700; }
+
+/* Tabla */
+.tabla-section { flex:1; min-height:0; overflow:hidden; display:flex;
+                 flex-direction:column; background:var(--surface);
+                 border:1px solid var(--border); border-radius:11px; box-shadow:var(--shadow); }
+.tabla-header { padding:.5rem .85rem; border-bottom:1px solid var(--border);
+                display:flex; align-items:center; justify-content:space-between;
+                flex-wrap:wrap; gap:.35rem; flex-shrink:0; }
+.tabla-title { font-size:.8rem; font-weight:800; color:var(--text); }
+.multi-table-scroll { flex:1; overflow-y:auto; padding:.6rem .7rem; }
+.multi-table-scroll::-webkit-scrollbar { width:4px; }
+.multi-table-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.multi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr));
+              gap:.5rem; align-content:start; }
+.sub-table { background:var(--surface2); border:1px solid var(--border);
+             border-radius:8px; overflow:hidden; }
+.sub-table table { width:100%; border-collapse:collapse; font-size:.74rem; }
+.sub-table thead th { background:var(--accent); color:#fff;
+  padding:.28rem .45rem; font-size:.56rem; font-weight:800;
+  text-transform:uppercase; letter-spacing:.05em; text-align:left; }
+.sub-table td { padding:.26rem .45rem; border-top:1px solid var(--border);
+  font-weight:700; white-space:nowrap; color:var(--muted); font-size:.74rem; }
+.sub-table td.nota-pass { color:var(--pass); }
+.sub-table td.nota-fail { color:var(--fail); }
+.sub-table tr:hover td { background:var(--border); }
+.pts-cell { color:var(--faint); font-size:.7rem; font-weight:600; }
+.nota-pass { color:var(--pass); }
+.nota-fail { color:var(--fail); }
+.empty-state { text-align:center; padding:1.8rem 1rem; color:var(--faint); }
+.empty-state .big { font-size:1.3rem; margin-bottom:.25rem; }
+.empty-state p { font-size:.72rem; font-weight:600; }
+
+/* Explicación */
+.exp-section { display:none; margin-top:.6rem; }
+.exp-grid-boxes { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; margin:.35rem 0; }
+.tramo-box { border:1px solid var(--border); border-radius:8px;
+             padding:.45rem .6rem; font-size:.66rem; line-height:1.55; color:var(--muted); }
+.tramo-label { font-size:.55rem; font-weight:800; text-transform:uppercase;
+               letter-spacing:.07em; margin-bottom:.2rem; }
+.tramo-fail .tramo-label { color:var(--fail); }
+.tramo-pass .tramo-label { color:var(--pass); }
+.tramo-fail { background:var(--fail-bg); }
+.tramo-pass { background:var(--pass-bg); }
+.ej-header { display:flex; justify-content:space-between; font-size:.55rem;
+             font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+             color:var(--faint); padding:.2rem 0 .08rem; }
+.ej-row { display:flex; align-items:center; gap:.45rem; padding:.25rem 0;
+          border-top:1px solid var(--border); font-size:.66rem; }
+.ej-pts { min-width:3.2rem; font-weight:700; color:var(--faint); font-size:.62rem; }
+.ej-desc { flex:1; color:var(--muted); line-height:1.35; }
+.ej-nota { font-size:.84rem; font-weight:800; min-width:2rem; text-align:right; }
+
+/* Nav footer desktop escala */
+.nav-footer-d { padding:.55rem .9rem; border-top:1px solid var(--border);
+                display:flex; align-items:center; justify-content:flex-end;
+                background:var(--surface); flex-shrink:0; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SLIDE 1 — MOBILE/TABLET SHARED STYLES
+══════════════════════════════════════════════════════════════════ */
+.mob-top { display:flex; align-items:flex-start; justify-content:space-between; gap:.5rem; }
+.mob-logo { display:flex; align-items:center; gap:.45rem; }
+.logo-mark { width:24px; height:24px; border-radius:7px; background:var(--accent);
+             display:flex; align-items:center; justify-content:center;
+             font-size:.65rem; font-weight:800; color:#fff; flex-shrink:0; }
+.mob-name { font-size:1rem; font-weight:800; color:var(--text); line-height:1.15; }
+.mob-sub  { font-size:.6rem; color:var(--faint); font-weight:600; }
+.mob .card { background:var(--surface); border:1px solid var(--border);
+             border-radius:13px; padding:1rem; box-shadow:var(--shadow); }
+.mob .field { display:flex; flex-direction:column; gap:.22rem; margin-bottom:.6rem; }
+.mob .field:last-of-type { margin-bottom:0; }
+.mob .field label { font-size:.76rem; font-weight:700; color:var(--muted); }
+.mob input[type="number"] { font-size:.9rem; font-weight:700; padding:.45rem .68rem; }
+.mob .slider-row { display:flex; align-items:center; gap:.55rem; margin-top:.18rem; }
+.mob .slider-val { font-size:.88rem; font-weight:800; color:var(--accent); min-width:2.6rem; text-align:right; }
+.mob .fields-2 { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; }
+.mob .btn-primary { margin-top:.65rem; }
+.mob .fx-label { font-size:.62rem; font-weight:800; text-transform:uppercase;
+                 letter-spacing:.07em; color:var(--faint); margin-bottom:.45rem;
+                 display:flex; align-items:center; gap:.35rem; }
+.mob .fx-icon { width:16px; height:16px; border-radius:5px; display:inline-flex;
+                align-items:center; justify-content:center; font-size:.54rem; font-weight:800; }
+.mob .fx-xl { background:var(--pass-bg); color:var(--pass); }
+.mob .fx-mt { background:#e8eaf5; color:#4a5490; }
+.mob .fx-code { background:var(--input-bg); border:1px solid var(--border);
+                border-radius:8px; padding:.6rem .8rem; font-family:'Fira Code',monospace;
+                font-size:.68rem; color:var(--accent); word-break:break-all;
+                line-height:1.65; white-space:pre-wrap; position:relative; min-height:2.5rem; }
+.mob .copy-btn { position:absolute; top:.36rem; right:.36rem; background:var(--border);
+                 border:none; border-radius:5px; color:var(--faint); font-size:.58rem;
+                 font-family:'Nunito',sans-serif; font-weight:700; padding:.14rem .4rem; cursor:pointer; }
+.mob .copy-btn:hover { background:var(--accent); color:#fff; }
+.mob .math-block { font-family:'Nunito',sans-serif; font-size:.72rem; color:var(--muted);
+                   line-height:1.5; white-space:normal; }
+.mob .math-params { display:flex; gap:.35rem; flex-wrap:wrap; margin-bottom:.35rem; }
+.mob .math-param { background:var(--input-bg); border:1px solid var(--border);
+                   border-radius:5px; padding:.15rem .42rem; font-size:.64rem; font-weight:700; color:var(--muted); }
+.mob .math-param b { color:var(--accent); }
+.mob .math-case { border:1px solid var(--border); border-radius:7px;
+                  padding:.4rem .65rem; margin:.2rem 0; }
+.mob .math-case-label { font-size:.6rem; font-weight:800; text-transform:uppercase;
+                        letter-spacing:.06em; margin-bottom:.22rem;
+                        display:flex; align-items:center; gap:.3rem; }
+.mob .math-case-label.fail-label { color:var(--fail); }
+.mob .math-case-label.pass-label { color:var(--pass); }
+.mob .math-eq { font-family:'Fira Code',monospace; font-size:.68rem; color:var(--text); line-height:1.65; }
+.mob .math-eq .mv   { color:var(--accent); font-weight:700; }
+.mob .math-eq .num  { color:var(--pass); font-weight:700; }
+.mob .math-eq .numf { color:var(--fail); font-weight:700; }
+.mob .results-top { padding:.8rem 1rem; border-bottom:1px solid var(--border);
+                    display:flex; align-items:center; justify-content:space-between;
+                    flex-wrap:wrap; gap:.45rem; }
+.mob .results-title { font-size:.85rem; font-weight:800; color:var(--text); }
+.mob .pills { display:flex; gap:.32rem; flex-wrap:wrap; }
+.mob .pill { background:var(--pill-bg); border:1px solid var(--border);
+             border-radius:999px; padding:.14rem .52rem; font-size:.62rem; font-weight:700; color:var(--faint); }
+.mob .pill b { color:var(--accent); }
+.mob table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.mob thead th { background:var(--surface2); padding:.55rem .8rem; text-align:left;
+                font-size:.6rem; font-weight:700; text-transform:uppercase;
+                letter-spacing:.06em; color:var(--faint); white-space:nowrap; }
+.mob td { padding:.45rem .8rem; border-top:1px solid var(--border);
+          white-space:nowrap; font-weight:600; color:var(--muted); }
+.mob tr:hover td { background:var(--surface2); }
+.mob .nota-num { font-size:.9rem; font-weight:800; }
+.mob .pass-color { color:var(--pass); }
+.mob .fail-color { color:var(--fail); }
+.mob .nota-list { display:flex; flex-direction:column; gap:.28rem; }
+.mob .nota-item { display:flex; align-items:center; justify-content:space-between;
+                  background:var(--surface); border:1px solid var(--border);
+                  border-radius:9px; padding:.48rem .75rem; }
+.mob .nota-item-left { display:flex; align-items:center; gap:.55rem; }
+.mob .nota-item-pts { font-size:.7rem; color:var(--faint); font-weight:700; min-width:3rem; }
+.mob .nota-val { font-size:.92rem; font-weight:800; }
+.mob .footer-note { font-size:.65rem; color:var(--faint); text-align:center; font-weight:600; }
+.mob .dl-hint { font-size:.6rem; color:var(--faint); text-align:center; margin-top:-.3rem; }
+.mob .exp-grid-boxes { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; margin:.4rem 0; }
+.mob .tramo-box { border:1px solid var(--border); border-radius:8px;
+                  padding:.5rem .65rem; font-size:.7rem; line-height:1.55; color:var(--muted); }
+.mob .tramo-label { font-size:.58rem; font-weight:800; text-transform:uppercase;
+                    letter-spacing:.07em; margin-bottom:.25rem; }
+.mob .tramo-fail .tramo-label { color:var(--fail); }
+.mob .tramo-pass .tramo-label { color:var(--pass); }
+.mob .tramo-fail { background:var(--fail-bg); }
+.mob .tramo-pass { background:var(--pass-bg); }
+.mob .ej-row { display:flex; align-items:center; gap:.45rem; padding:.28rem 0;
+               border-top:1px solid var(--border); font-size:.68rem; }
+.mob .ej-pts { min-width:3.2rem; font-weight:700; color:var(--faint); font-size:.64rem; }
+.mob .ej-desc { flex:1; color:var(--muted); line-height:1.4; }
+.mob .ej-nota { font-size:.88rem; font-weight:800; min-width:2.2rem; text-align:right; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SLIDE 2 — CALCULADORAS ACADÉMICAS
+   FIX #8: Todo el slide 2 es scrolleable — sin overflow:hidden ni
+   altura fija en ningún contenedor padre.
+══════════════════════════════════════════════════════════════════ */
+#slide-acad {
+  min-height:100vh;
+  overflow:auto; /* scrolleable en desktop y tablet */
+}
+
+.acad-page {
+  max-width:760px;
+  margin:0 auto;
+  padding:1.2rem 1rem 5rem; /* padding inferior generoso */
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  /* FIX: sin overflow:hidden, sin height fija */
+}
+
+/* Topbar sticky del slide 2 */
+.acad-topbar-wrap {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:20; /* encima de todo el contenido scrolleable */
+}
+.acad-topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.65rem 1rem;
+  max-width:760px;
+  margin:0 auto;
+}
+.acad-tb-brand { display:flex; align-items:center; gap:.5rem; }
+.acad-tb-name { font-size:.88rem; font-weight:800; color:var(--text); }
+.acad-tb-right { display:flex; align-items:center; gap:.5rem; }
+
+/* Topbar responsive: ocultar texto en móvil pequeño */
+@media(max-width:480px) {
+  .acad-tb-name { font-size:.78rem; }
+  .acad-topbar { padding:.5rem .75rem; }
+  .btn-nav-outline { font-size:.7rem; padding:.4rem .7rem; }
+}
+
+.acad-hero { text-align:center; padding:1.5rem 1rem .5rem; }
+.acad-hero h2 { font-size:1.4rem; font-weight:800; color:var(--text); margin-bottom:.35rem; }
+.acad-hero p { font-size:.85rem; color:var(--muted); max-width:480px; margin:0 auto; line-height:1.6; }
+
+/* Config section */
+.config-card { background:var(--surface); border:1px solid var(--border);
+               border-radius:13px; overflow:hidden; box-shadow:var(--shadow); }
+.config-head { padding:.75rem 1rem; border-bottom:1px solid var(--border);
+               display:flex; align-items:center; justify-content:space-between;
+               cursor:pointer; touch-action:manipulation; }
+.config-head-title { font-size:.82rem; font-weight:800; color:var(--text); }
+.config-toggle { font-size:.72rem; color:var(--faint); font-weight:700;
+                 background:none; border:none; cursor:pointer; padding:.2rem .4rem; }
+.config-body { padding:.9rem 1rem; display:grid; gap:.65rem; }
+.config-row { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
+@media(max-width:500px) { .config-row { grid-template-columns:1fr; } }
+.checkbox-field { display:flex; align-items:center; gap:.5rem; }
+.checkbox-field label { font-size:.78rem; font-weight:700; color:var(--muted); cursor:pointer; }
+.checkbox-field input[type="checkbox"] { width:16px; height:16px; cursor:pointer; }
+
+/* Ramo blocks */
+.ramo-block {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:11px; overflow:hidden; box-shadow:var(--shadow);
+}
+.ramo-head {
+  display:flex; align-items:center; gap:.6rem; padding:.75rem .9rem;
+  cursor:pointer; transition:background .15s;
+  touch-action:manipulation; /* FIX: tap sin delay */
+  -webkit-tap-highlight-color:transparent;
+}
+.ramo-head:hover { background:var(--surface2); }
+.ramo-idx { font-size:.65rem; font-weight:800; color:var(--accent);
+            background:var(--pass-bg); border-radius:5px;
+            padding:.14rem .4rem; flex-shrink:0; }
+.ramo-title { flex:1; font-size:.85rem; font-weight:800; color:var(--text); }
+.ramo-sub { font-size:.7rem; color:var(--muted); margin-top:.05rem; }
+.chevron { font-size:.6rem; color:var(--faint); transition:transform .2s; }
+.ramo-block.open .chevron { transform:rotate(180deg); }
+.ramo-body { display:none; padding:.85rem .9rem; border-top:1px solid var(--border);
+             flex-direction:column; gap:.65rem; }
+.ramo-block.open .ramo-body { display:flex; }
+.del-btn {
+  background:none; border:none; color:var(--faint); cursor:pointer;
+  font-size:.72rem; padding:.2rem .4rem; border-radius:5px;
+  font-family:'Nunito',sans-serif; font-weight:700;
+  transition:color .15s,background .15s;
+  touch-action:manipulation;
+}
+.del-btn:hover { color:var(--fail); background:var(--fail-bg); }
+
+/* Eval table */
+.eval-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.eval-table { width:100%; border-collapse:collapse; font-size:.8rem; min-width:400px; }
+.eval-table th { font-size:.62rem; font-weight:700; text-transform:uppercase;
+                 letter-spacing:.08em; color:var(--faint); padding:.4rem .5rem;
+                 border-bottom:1px solid var(--border); text-align:left; }
+.eval-table td { padding:.28rem .4rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+.eval-table td input { font-size:.78rem; padding:.32rem .5rem; }
+.eval-table tr:last-child td { border-bottom:none; }
+.add-eval-btn {
+  display:inline-flex; align-items:center; gap:.3rem; margin-top:.5rem;
+  font-size:.72rem; color:var(--accent); background:var(--pass-bg);
+  border:1px dashed var(--accent); border-radius:7px;
+  padding:.3rem .7rem; cursor:pointer; font-family:'Nunito',sans-serif;
+  font-weight:700; transition:background .15s;
+  touch-action:manipulation;
+}
+.add-eval-btn:hover { opacity:.8; }
+
+.add-ramo-btn {
+  display:flex; align-items:center; justify-content:center; gap:.35rem;
+  width:100%; padding:.55rem; background:var(--surface);
+  border:1.5px dashed var(--border); border-radius:11px;
+  font-size:.78rem; font-weight:700; color:var(--muted);
+  cursor:pointer; font-family:'Nunito',sans-serif;
+  transition:border-color .15s,color .15s;
+  touch-action:manipulation;
+}
+.add-ramo-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Results */
+.res-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:11px; padding:1rem; box-shadow:var(--shadow);
+  display:none;
+  /* FIX #9: resultados sin altura máxima fija — se expanden libremente */
+}
+.res-card.show { display:block; }
+.res-header { display:flex; align-items:center; justify-content:space-between;
+              margin-bottom:.8rem; flex-wrap:wrap; gap:.5rem; }
+.res-title { font-size:.9rem; font-weight:800; color:var(--text); }
+.res-ramo {
+  border:1px solid var(--border); border-radius:9px;
+  padding:.8rem .9rem; margin-bottom:.6rem;
+  border-left:3px solid var(--border);
+}
+.res-ramo.res-pass { border-left-color:var(--pass); }
+.res-ramo.res-fail { border-left-color:var(--fail); }
+.res-ramo.res-warn { border-left-color:var(--warn); }
+.res-ramo-top { display:flex; align-items:flex-start;
+                gap:.8rem; margin-bottom:.5rem; }
+.res-prom { font-size:1.6rem; font-weight:800; line-height:1; flex-shrink:0; }
+.res-pass .res-prom { color:var(--pass); }
+.res-fail .res-prom { color:var(--fail); }
+.res-warn .res-prom { color:var(--warn); }
+.res-ramo-info { flex:1; }
+.res-ramo-name { font-size:.88rem; font-weight:800; margin-bottom:.2rem; }
+.res-ramo-sub { font-size:.72rem; color:var(--muted); line-height:1.5; }
+.res-detail { font-size:.76rem; color:var(--muted); line-height:1.7;
+              border-top:1px solid var(--border); padding-top:.5rem; margin-top:.5rem; }
+.res-detail strong { color:var(--text); }
+
+/* Asistencia results */
+.asist-res { border:1px solid var(--border); border-radius:9px;
+             padding:.75rem .9rem; margin-bottom:.55rem;
+             border-left:3px solid var(--border); }
+.asist-res.a-ok   { border-left-color:var(--pass); }
+.asist-res.a-warn { border-left-color:var(--warn); }
+.asist-res.a-bad  { border-left-color:var(--fail); }
+.asist-top { display:flex; align-items:center; gap:.75rem; }
+.asist-pct { font-size:1.4rem; font-weight:800; min-width:3.5rem; }
+.a-ok  .asist-pct { color:var(--pass); }
+.a-warn .asist-pct { color:var(--warn); }
+.a-bad .asist-pct { color:var(--fail); }
+.asist-info { flex:1; }
+.asist-name { font-size:.84rem; font-weight:800; margin-bottom:.15rem; }
+.asist-detail { font-size:.74rem; color:var(--muted); line-height:1.5; }
+.pbar-wrap { height:4px; background:var(--border); border-radius:99px;
+             overflow:hidden; margin-top:.45rem; }
+.pbar { height:100%; border-radius:99px; transition:width .7s ease; }
+.a-ok  .pbar { background:var(--pass); }
+.a-warn .pbar { background:var(--warn); }
+.a-bad .pbar { background:var(--fail); }
+
+/* Actions row */
+.action-row { display:flex; gap:.5rem; flex-wrap:wrap; }
+.action-row .btn-primary { flex:2; min-width:120px; }
+
+/* FIX #10: fields-3 en móvil pasa a 2 columnas para no quedar aplastado */
+@media(max-width:500px) {
+  .fields-3 { grid-template-columns:1fr 1fr; }
+  .fields-3 .field:last-child { grid-column:1/-1; }
+}
+
+/* Tab nav */
+.tab-row { display:flex; gap:.4rem; flex-wrap:wrap; }
+.tab-btn {
+  padding:.4rem .8rem; border:1px solid var(--border);
+  border-radius:7px; font-size:.74rem; font-weight:700;
+  color:var(--muted); cursor:pointer; font-family:'Nunito',sans-serif;
+  background:var(--surface2); transition:all .15s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+/* Section labels */
+.s-label { font-size:.65rem; font-weight:800; text-transform:uppercase;
+           letter-spacing:.1em; color:var(--faint); display:flex;
+           align-items:center; gap:.5rem; }
+.s-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ═══ RESPONSIVE EXTRAS ══════════════════════════════════════════ */
+@media(max-width:768px) {
+  .acad-hero h2 { font-size:1.15rem; }
+  .acad-hero p  { font-size:.8rem; }
+  .res-prom { font-size:1.3rem; }
+  .eval-table { min-width:320px; font-size:.75rem; }
+  .eval-table td input { font-size:.72rem; }
 }
 </style>
 </head>
 <body>
+<div class="slides-wrap">
 
-<!-- ═══════════════════════════ DESKTOP / TABLET ════════════════════ -->
-<div class="app">
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 1 — ESCALA DE NOTAS
+═══════════════════════════════════════════════════════════════════ -->
+<div class="slide active" id="slide-escala">
 
-  <!-- SIDEBAR: Configuración -->
-  <aside class="sidebar">
-    <div class="sb-brand">
-      <div class="sb-logo">N</div>
-      <div>
-        <div class="sb-name">Escala de Notas</div>
-        <div class="sb-sub">🇨🇱 Sistema chileno</div>
-      </div>
-    </div>
-
-    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn-d">🌙 Modo oscuro</button>
-    <hr class="sb-divider">
-    <div class="sec-label">Configuración</div>
-
-    <div class="field">
-      <label>Puntaje máximo</label>
-      <span class="hint">Total de puntos</span>
-      <input type="number" id="d-pMax" value="40" min="1" max="1000">
-    </div>
-
-    <div class="field">
-      <label>Exigencia</label>
-      <div class="slider-row">
-        <input type="range" id="d-exigSl" min="30" max="95" value="60" step="1" oninput="syncExig(this.value)">
-        <span class="slider-val" id="d-exigD">60%</span>
-      </div>
-      <input type="number" id="d-exigN" value="60" min="30" max="95" style="margin-top:.28rem" oninput="syncExigN(this.value)">
-    </div>
-
-    <div class="fields-2">
-      <div class="field">
-        <label>Nota mín.</label>
-        <span class="hint">Con 0 pts</span>
-        <input type="number" id="d-nMin" value="1.0" min="1.0" max="3.9" step="0.1">
-      </div>
-      <div class="field">
-        <label>Aprobación</label>
-        <input type="number" id="d-nApro" value="4.0" min="1.1" max="9.9" step="0.1">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Nota máxima</label>
-      <input type="number" id="d-nMax" value="7.0" min="4.1" max="10.0" step="0.1">
-    </div>
-
-    <button class="btn-calc" onclick="generar()">Calcular escala</button>
-    <hr class="sb-divider">
-    <div class="sec-label">Plantilla Excel</div>
-    <button class="btn-dl disabled" id="btn-dl-d" onclick="descargarExcel()">⬇ Descargar plantilla</button>
-    <p style="font-size:.6rem;color:var(--faint);line-height:1.5;text-align:center;margin-top:.2rem" id="dl-hint-d">Genera primero la escala.</p>
-  </aside>
-
-  <!-- MAIN: fórmulas + tabla multi-col + explicación -->
-  <main class="main">
-
-    <!-- Fórmulas -->
-    <div class="fx-row">
-      <div class="card">
-        <div class="fx-label"><span class="fc-icon fc-xl">XL</span>Fórmula para Excel</div>
-        <div class="fx-code" id="d-fExcel">Presiona Calcular<button class="copy-btn" onclick="copiar('d-fExcel')">copiar</button></div>
-      </div>
-      <div class="card">
-        <div class="fx-label"><span class="fc-icon fc-mt">∑</span>Fórmula matemática</div>
-        <div class="math-block" id="d-fMath">Presiona Calcular para ver la fórmula</div>
-      </div>
-    </div>
-
-    <!-- Tabla multi-columna -->
-    <div class="tabla-section">
-      <div class="tabla-header">
-        <div class="tabla-title">Tabla de conversión</div>
-        <div class="pills" id="d-pills"></div>
-      </div>
-      <div class="multi-table-scroll">
-        <div class="multi-grid" id="d-multi-grid">
-          <div class="empty-state" style="grid-column:1/-1"><div class="big">📋</div><p>Configura y presiona <strong>Calcular</strong></p></div>
-        </div>
-
-        <!-- Explicación dinámica — dentro del scroll -->
-        <div class="card exp-section" id="d-explicacion" style="margin-top:.75rem">
-          <div class="fx-label" style="margin-bottom:.45rem">💡 Cómo funciona esta escala</div>
-          <div id="d-exp-body"></div>
+  <!-- ── DESKTOP/TABLET (>720px) — layout fijo tipo app ── -->
+  <div class="app">
+    <div class="topbar">
+      <div class="tb-brand">
+        <div class="tb-logo">N</div>
+        <div>
+          <div class="tb-name">Escala de Notas</div>
+          <div class="tb-sub">🇨🇱 Sistema chileno</div>
         </div>
       </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- ═══════════════════════════ MOBILE ════════════════════════════ -->
-<div class="mob">
-
-  <div class="mob-top">
-    <div class="mob-logo">
-      <div class="logo-mark">N</div>
-      <div>
-        <div class="mob-name">Escala de Notas</div>
-        <div class="mob-sub">Sistema chileno</div>
+      <div class="tb-right">
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn-d">🌙 Oscuro</button>
+        <button class="btn btn-nav-outline" onclick="goTo('slide-acad')">Calculadoras académicas →</button>
       </div>
     </div>
-    <button class="theme-btn" onclick="toggleTheme()" id="tbtn-m">🌙</button>
-  </div>
 
-  <!-- Config -->
-  <div class="card">
-    <div class="sec" style="margin-bottom:.6rem">Configuración</div>
-    <div class="field" style="margin-bottom:.6rem">
-      <label>Puntaje máximo</label>
-      <input type="number" id="m-pMax" value="40" min="1" max="1000">
+    <div class="app-inner">
+      <aside class="sidebar">
+        <div class="ad-slot ad-slot-sm">Anuncio</div>
+        <hr class="sb-divider">
+        <div class="sec-label">Configuración</div>
+
+        <div class="field">
+          <label>Puntaje máximo</label>
+          <span class="hint">Total de puntos</span>
+          <input type="number" id="d-pMax" value="40" min="1" max="1000">
+        </div>
+        <div class="field">
+          <label>Exigencia</label>
+          <div class="slider-row">
+            <input type="range" id="d-exigSl" min="30" max="95" value="60" step="1" oninput="syncExig(this.value)">
+            <span class="slider-val" id="d-exigD">60%</span>
+          </div>
+          <input type="number" id="d-exigN" value="60" min="30" max="95" style="margin-top:.25rem" oninput="syncExigN(this.value)">
+        </div>
+        <div class="fields-2">
+          <div class="field"><label>Nota mín.</label><span class="hint">Con 0 pts</span><input type="number" id="d-nMin" value="1.0" min="1.0" max="3.9" step="0.1"></div>
+          <div class="field"><label>Aprobación</label><input type="number" id="d-nApro" value="4.0" min="1.1" max="9.9" step="0.1"></div>
+        </div>
+        <div class="field">
+          <label>Nota máxima</label>
+          <input type="number" id="d-nMax" value="7.0" min="4.1" max="10.0" step="0.1">
+        </div>
+
+        <!-- FIX: type="button" explícito evita submit en algunos browsers -->
+        <button type="button" class="btn btn-primary" onclick="generar()">Calcular escala</button>
+        <hr class="sb-divider">
+        <div class="sec-label">Plantilla Excel</div>
+        <button type="button" class="btn btn-ghost disabled" id="btn-dl-d" onclick="descargarExcel()">⬇ Descargar</button>
+        <p style="font-size:.58rem;color:var(--faint);text-align:center;line-height:1.4;margin-top:.18rem" id="dl-hint-d">Genera primero la escala.</p>
+        <div class="ad-slot ad-slot-sm" style="margin-top:auto">Anuncio</div>
+      </aside>
+
+      <main class="main">
+        <div class="fx-row">
+          <div class="card">
+            <div class="fx-label"><span class="fc-icon fc-xl">XL</span>Fórmula Excel</div>
+            <div class="fx-code" id="d-fExcel">Presiona Calcular<button type="button" class="copy-btn" onclick="copiar('d-fExcel')">copiar</button></div>
+          </div>
+          <div class="card">
+            <div class="fx-label"><span class="fc-icon fc-mt">∑</span>Fórmula matemática</div>
+            <div class="math-block" id="d-fMath">Presiona Calcular</div>
+          </div>
+        </div>
+
+        <div class="tabla-section">
+          <div class="tabla-header">
+            <div class="tabla-title">Tabla de conversión</div>
+            <div class="pills" id="d-pills"></div>
+          </div>
+          <div class="multi-table-scroll">
+            <div class="multi-grid" id="d-multi-grid">
+              <div class="empty-state" style="grid-column:1/-1"><div class="big">📋</div><p>Configura y presiona <strong>Calcular</strong></p></div>
+            </div>
+            <div class="card exp-section" id="d-explicacion" style="margin-top:.55rem">
+              <div class="fx-label" style="margin-bottom:.35rem">💡 Cómo funciona esta escala</div>
+              <div id="d-exp-body"></div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
-    <div class="field" style="margin-bottom:.6rem">
-      <label>Exigencia</label>
-      <div class="slider-row" style="margin-top:.2rem">
-        <input type="range" id="m-sl" min="30" max="95" value="60" step="1" oninput="syncExig(this.value)">
-        <span class="slider-val" id="m-spct">60%</span>
+  </div><!-- /app -->
+
+  <!-- ── MOBILE (≤720px) — scrolleable ── -->
+  <div class="mob">
+    <div class="mob-top">
+      <div class="mob-logo">
+        <div class="logo-mark">N</div>
+        <div>
+          <div class="mob-name">Escala de Notas</div>
+          <div class="mob-sub">🇨🇱 Sistema chileno</div>
+        </div>
+      </div>
+      <button type="button" class="theme-btn" onclick="toggleTheme()" id="tbtn-m">🌙</button>
+    </div>
+    <div class="ad-slot ad-slot-sm">Anuncio</div>
+
+    <div class="card">
+      <div class="sec-label" style="margin-bottom:.55rem">Configuración</div>
+      <div class="field"><label>Puntaje máximo</label><input type="number" id="m-pMax" value="40" min="1" max="1000"></div>
+      <div class="field"><label>Exigencia</label>
+        <div class="slider-row">
+          <input type="range" id="m-sl" min="30" max="95" value="60" step="1" oninput="syncExig(this.value)">
+          <span class="slider-val" id="m-spct">60%</span>
+        </div>
+        <!-- FIX #11: input numérico de exigencia también en mobile para mayor usabilidad -->
+        <input type="number" id="m-exigN" value="60" min="30" max="95" style="margin-top:.25rem" oninput="syncExigN(this.value)">
+      </div>
+      <div class="fields-2">
+        <div class="field"><label>Nota mínima</label><input type="number" id="m-nMin" value="1.0" min="1.0" max="3.9" step="0.1"></div>
+        <div class="field"><label>Aprobación</label><input type="number" id="m-nApro" value="4.0" min="1.1" max="9.9" step="0.1"></div>
+      </div>
+      <div class="field"><label>Nota máxima</label><input type="number" id="m-nMax" value="7.0" min="4.1" max="10.0" step="0.1"></div>
+      <!-- FIX: type="button" + evento touchend como fallback táctil -->
+      <button type="button" class="btn btn-primary" style="margin-top:.65rem"
+              onclick="generar()"
+              ontouchend="generarTouch(event)">Calcular escala</button>
+    </div>
+
+    <div class="card">
+      <div class="fx-label"><span class="fx-icon fx-xl">XL</span>Fórmula Excel</div>
+      <div class="fx-code" id="m-fxExcel">Presiona Calcular<button type="button" class="copy-btn" onclick="copiar('m-fxExcel')">copiar</button></div>
+    </div>
+    <div class="card">
+      <div class="fx-label"><span class="fx-icon fx-mt">∑</span>Fórmula matemática</div>
+      <div class="math-block" id="m-fxMath">Presiona Calcular</div>
+    </div>
+    <div class="card" id="m-exp" style="display:none">
+      <div class="fx-label">💡 Cómo funciona esta escala</div>
+      <div id="m-exp-body"></div>
+    </div>
+    <button type="button" class="btn btn-ghost disabled" id="dl-m" onclick="descargarExcel()">⬇ Descargar plantilla Excel</button>
+    <p class="dl-hint" id="dl-hint-m">Genera la escala primero.</p>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="results-top">
+        <div class="results-title">Tabla de notas</div>
+        <div class="pills" id="m-pills"></div>
+      </div>
+      <div style="max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+        <table><thead><tr><th>Puntaje</th><th>Nota</th></tr></thead>
+        <tbody id="m-tbody"><tr><td colspan="2"><div class="empty-state"><div class="big">📋</div><p>Presiona Calcular</p></div></td></tr></tbody></table>
       </div>
     </div>
-    <div class="fields-2" style="margin-bottom:.6rem">
-      <div class="field"><label>Nota mínima</label><input type="number" id="m-nMin" value="1.0" min="1.0" max="3.9" step="0.1"></div>
-      <div class="field"><label>Aprobación</label><input type="number" id="m-nApro" value="4.0" min="1.1" max="9.9" step="0.1"></div>
-    </div>
-    <div class="field" style="margin-bottom:.7rem">
-      <label>Nota máxima</label>
-      <input type="number" id="m-nMax" value="7.0" min="4.1" max="10.0" step="0.1">
-    </div>
-    <button class="btn-primary" onclick="generar()">Calcular escala</button>
-  </div>
+    <div class="ad-slot">Anuncio</div>
+    <button type="button" class="btn btn-nav" style="width:100%;justify-content:center" onclick="goTo('slide-acad')">
+      Si eres estudiante, usa nuestras calculadoras académicas →
+    </button>
+    <p class="footer-note">Redondeo a 1 decimal · Escala chilena</p>
+  </div><!-- /mob -->
 
-  <!-- Fórmulas mobile -->
-  <div class="card">
-    <div class="fx-label"><span class="fx-icon fx-xl">XL</span>Fórmula Excel</div>
-    <div class="fx-code" id="m-fxExcel">Presiona Calcular<button class="copy-btn" onclick="copiar('m-fxExcel')">copiar</button></div>
-  </div>
+</div><!-- /slide-escala -->
 
-  <div class="card">
-    <div class="fx-label"><span class="fx-icon fx-mt">∑</span>Fórmula matemática</div>
-    <div class="math-block" id="m-fxMath">Presiona Calcular</div>
-  </div>
-
-  <!-- Explicación mobile -->
-  <div class="card" id="m-exp" style="display:none">
-    <div class="fx-label">💡 Cómo funciona esta escala</div>
-    <div id="m-exp-body"></div>
-  </div>
-
-  <!-- Descarga -->
-  <button class="btn-dl off" id="dl-m" onclick="descargarExcel()">⬇ Descargar plantilla Excel</button>
-  <p style="font-size:.62rem;color:var(--faint);text-align:center;margin-top:-.4rem" id="dl-hint-m">Genera la escala primero.</p>
-
-  <!-- Tabla -->
-  <div class="card" style="padding:0;overflow:hidden">
-    <div class="table-header">
-      <div class="table-title">Tabla de notas</div>
-      <div class="pills" id="m-pills"></div>
-    </div>
-    <div class="table-scroll" style="max-height:55vh;overflow-y:auto">
-      <table>
-        <thead><tr><th>Puntaje</th><th>Nota</th></tr></thead>
-        <tbody id="m-tbody">
-          <tr><td colspan="2"><div class="empty"><div class="ico">📋</div><p>Presiona Calcular</p></div></td></tr>
-        </tbody>
-      </table>
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 2 — CALCULADORAS ACADÉMICAS
+     FIX: sin height:100vh ni overflow:hidden — scroll nativo del body
+═══════════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-acad">
+  <!-- Topbar sticky (fuera de acad-page para que sea full-width) -->
+  <div class="acad-topbar-wrap">
+    <div class="acad-topbar">
+      <div class="acad-tb-brand">
+        <div class="tb-logo" style="background:var(--blue)">A</div>
+        <div>
+          <div class="acad-tb-name">Calculadoras Académicas</div>
+          <div class="tb-sub">Herramientas para estudiantes</div>
+        </div>
+      </div>
+      <div class="acad-tb-right">
+        <button type="button" class="theme-btn" onclick="toggleTheme()" id="themeBtn-acad">🌙 Oscuro</button>
+        <button type="button" class="btn btn-nav-outline" onclick="goTo('slide-escala')">← Escala de Notas</button>
+      </div>
     </div>
   </div>
 
-  <p style="font-size:.65rem;color:var(--faint);text-align:center;font-weight:600">Redondeo a 1 decimal · Escala chilena</p>
-</div><!-- /mob -->
+  <!-- Contenido scrolleable -->
+  <div class="acad-page">
+    <div class="ad-slot">Anuncio</div>
 
+    <div class="acad-hero">
+      <h2>Calculadoras Académicas</h2>
+      <p>Calcula tu promedio ponderado, si puedes eximirte, qué nota necesitas en el examen y tu estado de asistencia.</p>
+    </div>
 
+    <!-- Tabs -->
+    <div class="tab-row" id="acad-tabs">
+      <button type="button" class="tab-btn active" onclick="setTab('notas')">📊 Notas</button>
+      <button type="button" class="tab-btn" onclick="setTab('asist')">📅 Asistencia</button>
+      <button type="button" class="tab-btn" onclick="setTab('cfg')">⚙ Configuración</button>
+    </div>
+
+    <!-- TAB: CONFIGURACIÓN UNIVERSIDAD -->
+    <div id="tab-cfg" style="display:none">
+      <div class="config-card">
+        <div class="config-head" onclick="toggleConfig()">
+          <div class="config-head-title">⚙ Configuración de universidad</div>
+          <button type="button" class="config-toggle" id="cfg-toggle-btn">▲ Cerrar</button>
+        </div>
+        <div class="config-body" id="cfg-body">
+          <div class="s-label">Aprobación y eximición</div>
+          <div class="config-row">
+            <div class="field"><label>Nota mínima aprobación</label><input type="number" id="cfg-nApro" value="4.0" min="1" max="7" step="0.1"></div>
+            <div class="field"><label>Nota mínima eximición</label><input type="number" id="cfg-nExen" value="4.95" min="1" max="7" step="0.05"></div>
+          </div>
+          <div class="config-row">
+            <div class="checkbox-field">
+              <input type="checkbox" id="cfg-hasExen" checked onchange="updateCfgUI()">
+              <label for="cfg-hasExen">¿Existe eximición?</label>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="cfg-hasExam" checked onchange="updateCfgUI()">
+              <label for="cfg-hasExam">¿Existe examen final?</label>
+            </div>
+          </div>
+          <div class="checkbox-field">
+            <input type="checkbox" id="cfg-examOblig" onchange="updateCfgUI()">
+            <label for="cfg-examOblig">Examen siempre obligatorio</label>
+          </div>
+
+          <div class="s-label">Ponderación del examen</div>
+          <div id="cfg-exam-section">
+            <div class="config-row">
+              <div class="field"><label>% Nota de presentación</label><input type="number" id="cfg-pPres" value="70" min="1" max="99"></div>
+              <div class="field"><label>% Examen</label><input type="number" id="cfg-pExam" value="30" min="1" max="99"></div>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="cfg-examPondFija" checked>
+              <label for="cfg-examPondFija">Ponderación fija (no configurable por ramo)</label>
+            </div>
+          </div>
+
+          <div class="s-label">Asistencia</div>
+          <div class="config-row">
+            <div class="field"><label>Asistencia mínima requerida (%)</label><input type="number" id="cfg-asist" value="75" min="0" max="100"></div>
+            <div class="checkbox-field" style="align-self:flex-end;padding-bottom:.4rem">
+              <input type="checkbox" id="cfg-hasAsist" checked>
+              <label for="cfg-hasAsist">Asistencia obligatoria</label>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="saveCfg()">Guardar configuración</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: NOTAS -->
+    <div id="tab-notas">
+      <div class="s-label">Ramos con notas</div>
+      <div id="notas-list"></div>
+      <button type="button" class="add-ramo-btn" onclick="addNotasRamo()">+ Agregar ramo</button>
+      <div class="action-row" style="margin-top:.8rem">
+        <!-- FIX: type="button" + ontouchend como fallback táctil -->
+        <button type="button" class="btn btn-primary"
+                onclick="calcularNotas()"
+                ontouchend="calcularNotasTouch(event)">Calcular</button>
+        <button type="button" class="btn btn-ghost" onclick="resetNotas()">Limpiar</button>
+      </div>
+      <div class="res-card" id="res-notas-card" style="margin-top:.8rem">
+        <div class="res-header">
+          <div class="res-title">Resultados por ramo</div>
+        </div>
+        <div id="res-notas-body"></div>
+      </div>
+    </div>
+
+    <!-- TAB: ASISTENCIA -->
+    <div id="tab-asist" style="display:none">
+      <div class="s-label">Ramos con asistencia</div>
+      <div id="asist-list"></div>
+      <button type="button" class="add-ramo-btn" onclick="addAsistRamo()">+ Agregar ramo</button>
+      <div class="action-row" style="margin-top:.8rem">
+        <button type="button" class="btn btn-primary"
+                onclick="calcularAsist()"
+                ontouchend="calcularAsistTouch(event)">Calcular</button>
+        <button type="button" class="btn btn-ghost" onclick="resetAsist()">Limpiar</button>
+      </div>
+      <div class="res-card" id="res-asist-card" style="margin-top:.8rem">
+        <div class="res-header"><div class="res-title">Estado de asistencia</div></div>
+        <div id="res-asist-body"></div>
+      </div>
+    </div>
+
+    <div class="ad-slot">Anuncio</div>
+    <button type="button" class="btn btn-nav-outline" style="width:100%;padding:.7rem;text-align:center;margin-top:.5rem" onclick="goTo('slide-escala')">← Volver a Escala de Notas</button>
+  </div><!-- /acad-page -->
+</div><!-- /slide-acad -->
+
+</div><!-- /slides-wrap -->
 
 <script>
-// ── State ─────────────────────────────────────────────────────────
-let S = { pMax:40, exig:60, nMin:1.0, nApro:4.0, nMax:7.0, ready:false };
-let dark = false;
+// ══════════════════════════════════════════════════════════════════
+// NAVEGACIÓN
+// FIX: goTo() gestiona body.app-mode para habilitar/deshabilitar
+// el layout fijo solo en el slide de escala (solo con viewport >720px)
+// ══════════════════════════════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
 
-// ── Theme ─────────────────────────────────────────────────────────
-function toggleTheme() {
-  dark = !dark;
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
-  const dBtn = document.getElementById('themeBtn-d');
-  const mBtn = document.getElementById('tbtn-m');
-  if (dBtn) dBtn.textContent = dark ? '☀ Modo claro' : '🌙 Modo oscuro';
-  if (mBtn) mBtn.textContent = dark ? '☀' : '🌙';
+  // Aplicar app-mode solo en slide-escala con viewport >720px (breakpoint CSS)
+  const isDesktop = window.innerWidth > 720;
+  if (id === 'slide-escala' && isDesktop) {
+    document.body.classList.add('app-mode');
+  } else {
+    document.body.classList.remove('app-mode');
+  }
 }
 
-// ── Slider sync ───────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// TEMA
+// ══════════════════════════════════════════════════════════════════
+let dark = localStorage.getItem('theme') === 'dark';
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  const label = dark ? '☀ Claro' : '🌙 Oscuro';
+  ['themeBtn-d','tbtn-m','themeBtn-acad'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.textContent = label;
+  });
+}
+function toggleTheme() {
+  dark = !dark;
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+  applyTheme();
+}
+applyTheme();
+
+// ══════════════════════════════════════════════════════════════════
+// ESCALA — helpers
+// ══════════════════════════════════════════════════════════════════
+let S = { pMax:40, exig:60, nMin:1.0, nApro:4.0, nMax:7.0, ready:false };
+
 function syncExig(v) {
-  v = Math.min(95, Math.max(30, parseInt(v)||60));
+  v = Math.min(95, Math.max(30, parseInt(v) || 60));
   // Desktop
   const dSl = document.getElementById('d-exigSl'); if(dSl) dSl.value = v;
-  const dDp = document.getElementById('d-exigD');  if(dDp) dDp.textContent = v+'%';
-  const dNm = document.getElementById('d-exigN');  if(dNm) dNm.value = v;
+  const dD  = document.getElementById('d-exigD');  if(dD)  dD.textContent  = v + '%';
+  const dN  = document.getElementById('d-exigN');  if(dN)  dN.value = v;
   // Mobile
-  const mSl = document.getElementById('m-sl');   if(mSl) mSl.value = v;
-  const mDp = document.getElementById('m-spct'); if(mDp) mDp.textContent = v+'%';
+  const mSl = document.getElementById('m-sl');     if(mSl) mSl.value = v;
+  const mPct= document.getElementById('m-spct');   if(mPct) mPct.textContent = v + '%';
+  const mN  = document.getElementById('m-exigN');  if(mN)  mN.value = v;
 }
 function syncExigN(v) { syncExig(v); }
 
-// ── Calc ──────────────────────────────────────────────────────────
 function r1(n) { return Math.round(n * 10) / 10; }
+
 function calcNota(p, pApro, pMax, nMin, nApro, nMax) {
   if (pApro === 0) return nMin;
-  if (p < pApro)   return r1(nMin + (p / pApro) * (nApro - nMin));
+  if (p < pApro)  return r1(nMin + (p / pApro) * (nApro - nMin));
   if (pMax === pApro) return nMax;
   return r1(nApro + ((p - pApro) / (pMax - pApro)) * (nMax - nApro));
 }
 
+// readParams() lee el panel visible según viewport
 function readParams() {
-  const g  = id => parseFloat(document.getElementById(id)?.value);
-  const gi = id => parseInt(document.getElementById(id)?.value);
-  S.pMax  = gi('d-pMax')   || gi('m-pMax')  || 40;
-  S.exig  = gi('d-exigSl') || gi('m-sl')    || 60;
-  S.nMin  = g('d-nMin')    || g('m-nMin')   || 1.0;
-  S.nApro = g('d-nApro')   || g('m-nApro')  || 4.0;
-  S.nMax  = g('d-nMax')    || g('m-nMax')   || 7.0;
+  const isDesktop = window.innerWidth > 720;
+
+  function getNum(deskId, mobId) {
+    const el = document.getElementById(isDesktop ? deskId : mobId);
+    return el ? parseFloat(el.value) : NaN;
+  }
+  function getInt(deskId, mobId) {
+    const el = document.getElementById(isDesktop ? deskId : mobId);
+    return el ? parseInt(el.value) : NaN;
+  }
+
+  S.pMax  = getInt('d-pMax',  'm-pMax')  || 40;
+  S.exig  = getInt('d-exigSl','m-sl')    || 60;
+  S.nMin  = getNum('d-nMin',  'm-nMin')  || 1.0;
+  S.nApro = getNum('d-nApro', 'm-nApro') || 4.0;
+  S.nMax  = getNum('d-nMax',  'm-nMax')  || 7.0;
+
+  if (!S.pMax  || S.pMax  <= 0) S.pMax  = 40;
+  if (!S.exig  || S.exig  <= 0) S.exig  = 60;
+  if (!S.nMin  || S.nMin  <= 0) S.nMin  = 1.0;
+  if (!S.nApro || S.nApro <= 0) S.nApro = 4.0;
+  if (!S.nMax  || S.nMax  <= 0) S.nMax  = 7.0;
 }
 
-// ── Formula display ───────────────────────────────────────────────
 function setFormula(id, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
+  const el = document.getElementById(id); if(!el) return;
   const btn = el.querySelector('.copy-btn');
   el.textContent = text;
-  if (btn) el.appendChild(btn);
+  if(btn) el.appendChild(btn);
 }
 
 function copiar(id) {
-  const el  = document.getElementById(id);
-  if (!el) return;
+  const el = document.getElementById(id); if(!el) return;
   const txt = el.childNodes[0]?.textContent?.trim() || '';
   navigator.clipboard.writeText(txt).then(() => {
     const btn = el.querySelector('.copy-btn');
-    if (btn) { btn.textContent='✓'; setTimeout(()=>btn.textContent='copiar',1500); }
+    if(btn){ btn.textContent='✓'; setTimeout(()=>btn.textContent='copiar',1500); }
   });
 }
 
-// ── Explicación dinámica ──────────────────────────────────────────
 function buildExplicacion({ pMax, exig, nMin, nApro, nMax, pApro, dNeg, dPos, dPts }) {
   const hl  = v => `<strong style="color:var(--accent)">${v}</strong>`;
   const dim = v => `<span style="color:var(--faint)">${v}</span>`;
-  const rateNeg = pApro > 0 ? ((nApro-nMin)/pApro).toFixed(3) : '—';
-  const ratePos = dPts  > 0 ? ((nMax-nApro)/dPts).toFixed(3)  : '—';
-  const notaAntes = calcNota(Math.max(0,pApro-1), pApro, pMax, nMin, nApro, nMax);
-  const pEjFail = Math.max(1, Math.floor(pApro/2));
-  const pEjPass = Math.min(pMax-1, pApro + Math.ceil(dPts*0.6));
-  const nEjFail = calcNota(pEjFail, pApro, pMax, nMin, nApro, nMax);
-  const nEjEdge = calcNota(pApro,   pApro, pMax, nMin, nApro, nMax);
-  const nEjPass = calcNota(pEjPass, pApro, pMax, nMin, nApro, nMax);
-
-  const row = (pts, nota, desc) => `
-    <div class="ej-row">
-      <span class="ej-pts">${pts} pts</span>
-      <span class="ej-desc">${desc}</span>
-      <span class="ej-nota ${nota >= nApro ? 'nota-pass' : 'nota-fail'}">${nota.toFixed(1)}</span>
-    </div>`;
-
-  return `
-    <p style="font-size:.72rem;color:var(--muted);line-height:1.6;margin-bottom:.45rem">
-      La escala tiene ${hl('dos tramos lineales')} separados por el puntaje de aprobación:
-      ${hl(pApro)} de ${pMax} pts (${exig}% de exigencia).
-    </p>
-    <div class="exp-grid-boxes">
-      <div class="tramo-box tramo-fail">
-        <div class="tramo-label">Tramo reprobado</div>
-        De 0 a ${hl(pApro-1)} pts<br>
-        Nota: ${hl(nMin.toFixed(1))} → ${hl(notaAntes.toFixed(1))}<br>
-        Sube ${hl(rateNeg)} por punto
-      </div>
-      <div class="tramo-box tramo-pass">
-        <div class="tramo-label">Tramo aprobado</div>
-        De ${hl(pApro)} a ${hl(pMax)} pts<br>
-        Nota: ${hl(nApro.toFixed(1))} → ${hl(nMax.toFixed(1))}<br>
-        ${dPts > 0 ? `Sube ${hl(ratePos)} por punto` : 'Tramo de un solo punto'}
-      </div>
-    </div>
-    <div class="ej-header"><span>Puntaje</span><span style="flex:1;padding-left:.4rem">Cómo se calcula</span><span>Nota</span></div>
-    ${pEjFail > 0 ? row(pEjFail, nEjFail,
-      `Reprobado: ${nMin.toFixed(1)} + (${pEjFail}/${pApro}) × ${dNeg} = ${dim(nEjFail.toFixed(1))}`) : ''}
-    ${row(pApro, nEjEdge, `Límite de aprobación → exactamente ${hl(nApro.toFixed(1))}`)}
-    ${pEjPass < pMax ? row(pEjPass, nEjPass,
-      `Aprobado: ${nApro.toFixed(1)} + ((${pEjPass}−${pApro})/${dPts}) × ${dPos} = ${dim(nEjPass.toFixed(1))}`) : ''}
-    ${row(pMax, nMax, `Puntaje perfecto → nota máxima: ${hl(nMax.toFixed(1))}`)}`;
+  const rNeg = pApro > 0 ? ((nApro-nMin)/pApro).toFixed(3) : '—';
+  const rPos = dPts  > 0 ? ((nMax-nApro)/dPts).toFixed(3)  : '—';
+  const nAntes = calcNota(Math.max(0,pApro-1), pApro, pMax, nMin, nApro, nMax);
+  const pF = Math.max(1, Math.floor(pApro/2));
+  const pP = Math.min(pMax-1, pApro + Math.ceil(dPts*0.6));
+  const nF = calcNota(pF, pApro, pMax, nMin, nApro, nMax);
+  const nE = calcNota(pApro, pApro, pMax, nMin, nApro, nMax);
+  const nP = calcNota(pP, pApro, pMax, nMin, nApro, nMax);
+  const row = (pts,nota,desc) => `<div class="ej-row"><span class="ej-pts">${pts} pts</span><span class="ej-desc">${desc}</span><span class="ej-nota ${nota>=nApro?'nota-pass':'nota-fail'}">${nota.toFixed(1)}</span></div>`;
+  return `<p style="font-size:.7rem;color:var(--muted);line-height:1.55;margin-bottom:.4rem">La escala tiene ${hl('dos tramos lineales')} separados por el puntaje de aprobación: ${hl(pApro)} de ${pMax} pts (${exig}% de exigencia).</p>
+  <div class="exp-grid-boxes">
+    <div class="tramo-box tramo-fail"><div class="tramo-label">Tramo reprobado</div>De 0 a ${hl(pApro-1)} pts<br>Nota: ${hl(nMin.toFixed(1))} → ${hl(nAntes.toFixed(1))}<br>Sube ${hl(rNeg)} por punto</div>
+    <div class="tramo-box tramo-pass"><div class="tramo-label">Tramo aprobado</div>De ${hl(pApro)} a ${hl(pMax)} pts<br>Nota: ${hl(nApro.toFixed(1))} → ${hl(nMax.toFixed(1))}<br>${dPts>0?`Sube ${hl(rPos)} por punto`:'Tramo de un punto'}</div>
+  </div>
+  <div class="ej-header"><span>Puntaje</span><span style="flex:1;padding-left:.35rem">Cómo se calcula</span><span>Nota</span></div>
+  ${pF>0?row(pF,nF,`Reprobado: ${nMin.toFixed(1)} + (${pF}/${pApro}) × ${dNeg} = ${dim(nF.toFixed(1))}`):''}
+  ${row(pApro,nE,`Límite de aprobación → exactamente ${hl(nApro.toFixed(1))}`)}
+  ${pP<pMax?row(pP,nP,`Aprobado: ${nApro.toFixed(1)} + ((${pP}−${pApro})/${dPts}) × ${dPos} = ${dim(nP.toFixed(1))}`):''}
+  ${row(pMax,nMax,`Puntaje perfecto → nota máxima: ${hl(nMax.toFixed(1))}`)}`;
 }
 
-// ── GENERAR ───────────────────────────────────────────────────────
+function buildMathHtml(nMin, nApro, nMax, pApro, dPts, dNeg, dPos) {
+  return `<div class="math-params">
+    <div class="math-param">Máx: <b>${S.pMax}</b></div>
+    <div class="math-param">Aprueba: <b>${pApro} pts</b> (${S.exig}%)</div>
+    <div class="math-param">Nota mín: <b>${nMin.toFixed(1)}</b></div>
+    <div class="math-param">Aprobación: <b>${nApro.toFixed(1)}</b></div>
+    <div class="math-param">Nota máx: <b>${nMax.toFixed(1)}</b></div>
+  </div>
+  <div class="math-case" style="background:var(--fail-bg)">
+    <div class="math-case-label fail-label">✗ Si puntaje &lt; ${pApro} — reprobado</div>
+    <div class="math-eq">Nota = <span class="numf">${nMin.toFixed(1)}</span> + ( puntaje ÷ <span class="mv">${pApro}</span> ) × <span class="mv">${dNeg}</span></div>
+  </div>
+  <div class="math-case" style="background:var(--pass-bg);margin-top:.3rem">
+    <div class="math-case-label pass-label">✓ Si puntaje ≥ ${pApro} — aprobado</div>
+    <div class="math-eq">Nota = <span class="num">${nApro.toFixed(1)}</span> + ( ( puntaje − <span class="mv">${pApro}</span> ) ÷ <span class="mv">${dPts}</span> ) × <span class="mv">${dPos}</span></div>
+  </div>`;
+}
+
 function generar() {
   readParams();
   const { pMax, exig, nMin, nApro, nMax } = S;
-  const pApro = Math.ceil(pMax * (exig/100));
+  const pApro = Math.ceil(pMax * (exig / 100));
   const dNeg  = (nApro - nMin).toFixed(1);
-  const dPos  = (nMax  - nApro).toFixed(1);
+  const dPos  = (nMax - nApro).toFixed(1);
   const dPts  = pMax - pApro;
 
-  // Fórmula Excel — referenciada en A1
   const fx = `=SI(A1<${pApro},REDONDEAR(${nMin.toFixed(1)}+(A1/${pApro})*${dNeg},1),REDONDEAR(${nApro.toFixed(1)}+((A1-${pApro})/${dPts})*${dPos},1))`;
   setFormula('d-fExcel', fx);
   setFormula('m-fxExcel', fx);
 
-  // Fórmula matemática
-  const mathHtml = `<span class="mm">Variables:</span>
-  <span class="mv">p</span> = puntaje  |  <span class="mv">P</span> = ${pMax}  |  <span class="mv">p*</span> = ${pApro} (${exig}% de ${pMax})
+  const mh = buildMathHtml(nMin, nApro, nMax, pApro, dPts, dNeg, dPos);
+  ['d-fMath','m-fxMath'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=mh; });
 
-<span class="mm">Si p &lt; p*  (reprobado):</span>
-  N = <span class="mv">${nMin.toFixed(1)}</span> + (p / <span class="mv">${pApro}</span>) × <span class="mv">${dNeg}</span>
-
-<span class="mm">Si p ≥ p*  (aprobado):</span>
-  N = <span class="mv">${nApro.toFixed(1)}</span> + ((p − <span class="mv">${pApro}</span>) / <span class="mv">${dPts}</span>) × <span class="mv">${dPos}</span>`;
-  ['d-fMath','m-fxMath'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.innerHTML = mathHtml;
-  });
-
-  // Pills
-  const ph = `<div class="pill">Máx: <b>${pMax}</b></div><div class="pill">Aprueba con: <b>${pApro} pts</b></div><div class="pill">Exigencia: <b>${exig}%</b></div>`;
+  const ph = `<div class="pill">Máx: <b>${pMax}</b></div><div class="pill">Aprueba: <b>${pApro} pts</b></div><div class="pill">Exigencia: <b>${exig}%</b></div>`;
   ['d-pills','m-pills'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=ph; });
 
-  // Explicación
   const expHtml = buildExplicacion({ pMax, exig, nMin, nApro, nMax, pApro, dNeg, dPos, dPts });
   ['d-exp-body','m-exp-body'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=expHtml; });
-  const dExp = document.getElementById('d-explicacion');
-  if (dExp) dExp.style.display = 'block';
-  const mExp = document.getElementById('m-exp');
-  if (mExp) mExp.style.display = 'block';
+  const dExp=document.getElementById('d-explicacion'); if(dExp) dExp.style.display='block';
+  const mExp=document.getElementById('m-exp'); if(mExp) mExp.style.display='block';
 
-  // ── Desktop: grilla de sub-tablas horizontales ────────────────
+  // Desktop grid
   const grid = document.getElementById('d-multi-grid');
-  if (grid) {
+  if(grid) {
     grid.innerHTML = '';
-    const CHUNK = 10;
-    for (let start = 0; start <= pMax; start += CHUNK) {
-      const end = Math.min(start + CHUNK - 1, pMax);
-      const subDiv = document.createElement('div');
-      subDiv.className = 'sub-table';
-      let html = '<table><thead><tr><th>Puntaje</th><th>Nota</th></tr></thead><tbody>';
-      for (let p = start; p <= end; p++) {
+    for(let start=0; start<=pMax; start+=10) {
+      const end = Math.min(start+9, pMax);
+      const sub = document.createElement('div'); sub.className='sub-table';
+      let h = '<table><thead><tr><th>Puntaje</th><th>Nota</th></tr></thead><tbody>';
+      for(let p=start; p<=end; p++) {
         const nota = calcNota(p, pApro, pMax, nMin, nApro, nMax);
-        const pass = nota >= nApro;
-        html += `<tr><td class="pts-cell">${p}</td><td class="${pass?'nota-pass':'nota-fail'}">${nota.toFixed(1)}</td></tr>`;
+        h += `<tr><td class="pts-cell">${p}</td><td class="${nota>=nApro?'nota-pass':'nota-fail'}">${nota.toFixed(1)}</td></tr>`;
       }
-      html += '</tbody></table>';
-      subDiv.innerHTML = html;
-      grid.appendChild(subDiv);
+      h += '</tbody></table>'; sub.innerHTML=h; grid.appendChild(sub);
     }
   }
 
-  // ── Mobile: tabla simple ──────────────────────────────────────
-  const mTbody = document.getElementById('m-tbody');
-  if (mTbody) {
-    mTbody.innerHTML = '';
-    for (let p = 0; p <= pMax; p++) {
+  // Mobile table
+  const mt = document.getElementById('m-tbody');
+  if(mt) {
+    mt.innerHTML = '';
+    for(let p=0; p<=pMax; p++) {
       const nota = calcNota(p, pApro, pMax, nMin, nApro, nMax);
       const pass = nota >= nApro;
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td style="color:var(--muted);font-weight:600">${p}<span style="color:var(--faint);font-weight:500"> / ${pMax}</span></td><td class="nota-num ${pass?'pass-color':'fail-color'}">${nota.toFixed(1)}</td>`;
-      mTbody.appendChild(tr);
+      tr.innerHTML=`<td style="color:var(--muted);font-weight:600">${p}<span style="color:var(--faint);font-weight:500"> / ${pMax}</span></td><td class="nota-num ${pass?'pass-color':'fail-color'}">${nota.toFixed(1)}</td>`;
+      mt.appendChild(tr);
     }
   }
 
-  // Habilitar descarga
   S.ready = true;
   ['btn-dl-d','dl-m'].forEach(id => { const b=document.getElementById(id); if(b) b.classList.remove('disabled','off'); });
-  ['dl-hint-d','dl-hint-m'].forEach(id => {
-    const h=document.getElementById(id);
-    if(h) h.textContent='El Excel incluye tu fórmula actualizada.';
+  ['dl-hint-d','dl-hint-m'].forEach(id => { const h=document.getElementById(id); if(h) h.textContent='El Excel incluye tu fórmula actualizada.'; });
+}
+
+// FIX #13: handlers táctiles para prevenir doble ejecución (touchend+click)
+function generarTouch(e) {
+  e.preventDefault(); // bloquea el click sintético posterior
+  generar();
+}
+function calcularNotasTouch(e) {
+  e.preventDefault();
+  calcularNotas();
+}
+function calcularAsistTouch(e) {
+  e.preventDefault();
+  calcularAsist();
+}
+
+function descargarExcel() {
+  if(!S.ready) return;
+  readParams();
+  const { pMax, exig, nMin, nApro, nMax } = S;
+  const pApro=Math.ceil(pMax*(exig/100));
+  const dNeg=(nApro-nMin).toFixed(1); const dPos=(nMax-nApro).toFixed(1); const dPts=pMax-pApro;
+  const wb=XLSX.utils.book_new(), rows=[];
+  rows.push(['PARÁMETROS','']); rows.push(['Puntaje máximo',pMax]);
+  rows.push(['Exigencia (%)',exig]); rows.push(['Nota mínima',nMin]);
+  rows.push(['Nota aprobación',nApro]); rows.push(['Nota máxima',nMax]);
+  rows.push(['Puntaje aprobación (p*)',pApro]); rows.push([]);
+  rows.push(['#','Nombre alumno/a','Puntaje','Nota']);
+  for(let i=1;i<=35;i++){
+    const r=9+i;
+    rows.push([i,'','',{f:`=IF(C${r}="","",IF(C${r}<${pApro},ROUND(${nMin}+(C${r}/${pApro})*${dNeg},1),ROUND(${nApro}+((C${r}-${pApro})/${dPts})*${dPos},1)))`}]);
+  }
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:4},{wch:26},{wch:14},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Notas');
+  const inst=[['INSTRUCCIONES'],['Ingresa nombre en col B, puntaje en col C.'],['Nota (col D) se calcula automáticamente.'],
+    [`Si puntaje < ${pApro}: N = ${nMin} + (p/${pApro}) × ${dNeg}`],
+    [`Si puntaje >= ${pApro}: N = ${nApro} + ((p-${pApro})/${dPts}) × ${dPos}`]];
+  const wsI=XLSX.utils.aoa_to_sheet(inst); wsI['!cols']=[{wch:60}];
+  XLSX.utils.book_append_sheet(wb,wsI,'Instrucciones');
+  XLSX.writeFile(wb,`notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CALCULADORAS ACADÉMICAS
+// ══════════════════════════════════════════════════════════════════
+let cfg = {
+  nApro:4.0, nExen:4.95, hasExen:true, hasExam:true, examOblig:false,
+  pPres:70, pExam:30, examPondFija:true, hasAsist:true, asistMin:75
+};
+let notasRamos=[], asistRamos=[], nId=0, aId=0;
+let cfgOpen = true;
+
+function saveCfg() {
+  cfg.nApro    = parseFloat(document.getElementById('cfg-nApro').value)||4.0;
+  cfg.nExen    = parseFloat(document.getElementById('cfg-nExen').value)||4.95;
+  cfg.hasExen  = document.getElementById('cfg-hasExen').checked;
+  cfg.hasExam  = document.getElementById('cfg-hasExam').checked;
+  cfg.examOblig= document.getElementById('cfg-examOblig').checked;
+  cfg.pPres    = parseFloat(document.getElementById('cfg-pPres').value)||70;
+  cfg.pExam    = parseFloat(document.getElementById('cfg-pExam').value)||30;
+  cfg.examPondFija=document.getElementById('cfg-examPondFija').checked;
+  cfg.hasAsist = document.getElementById('cfg-hasAsist').checked;
+  cfg.asistMin = parseFloat(document.getElementById('cfg-asist').value)||75;
+  alert('✓ Configuración guardada');
+}
+
+function updateCfgUI() {
+  const hasExam = document.getElementById('cfg-hasExam').checked;
+  const hasExen = document.getElementById('cfg-hasExen').checked;
+  document.getElementById('cfg-exam-section').style.display = hasExam ? '' : 'none';
+  document.getElementById('cfg-nExen').closest('.field').style.display = hasExen ? '' : 'none';
+}
+
+function toggleConfig() {
+  cfgOpen = !cfgOpen;
+  document.getElementById('cfg-body').style.display = cfgOpen ? '' : 'none';
+  document.getElementById('cfg-toggle-btn').textContent = cfgOpen ? '▲ Cerrar' : '▼ Abrir';
+}
+
+function setTab(t) {
+  ['notas','asist','cfg'].forEach(n => {
+    const el = document.getElementById('tab-'+n); if(el) el.style.display = n===t ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['notas','asist','cfg'][i] === t);
+  });
+  // FIX: al cambiar de tab, hacer scroll al inicio del contenido
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Notas ──
+function addNotasRamo() {
+  const id = ++nId; notasRamos.push(id);
+  const list = document.getElementById('notas-list');
+  const d = document.createElement('div'); d.className='ramo-block open'; d.id='nr-'+id;
+  d.innerHTML=`
+    <div class="ramo-head" onclick="toggleBlock('nr-${id}')">
+      <span class="ramo-idx">${notasRamos.length}</span>
+      <div style="flex:1"><div class="ramo-title" id="nr-tit-${id}">Ramo ${notasRamos.length}</div><div class="ramo-sub" id="nr-sub-${id}">sin notas</div></div>
+      ${notasRamos.length>1?`<button type="button" class="del-btn" onclick="delNotasRamo(${id},event)">eliminar</button>`:''}
+      <span class="chevron">▼</span>
+    </div>
+    <div class="ramo-body">
+      <div class="field"><label>Nombre del ramo</label><input type="text" id="nr-nom-${id}" placeholder="ej. Cálculo I" oninput="refreshNotas(${id})"></div>
+      <div class="eval-wrap"><table class="eval-table">
+        <thead><tr><th>#</th><th>Evaluación</th><th>Nota</th><th>Pond.%</th><th></th></tr></thead>
+        <tbody id="nr-tbody-${id}"></tbody>
+      </table></div>
+      <button type="button" class="add-eval-btn" onclick="addEval(${id})">+ evaluación</button>
+    </div>`;
+  list.appendChild(d); addEval(id);
+}
+
+function addEval(rid) {
+  const tb = document.getElementById('nr-tbody-'+rid);
+  const n  = tb.rows.length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML=`<td style="color:var(--faint);font-size:.7rem">${n}</td>
+    <td><input type="text" id="ne-${rid}-${n}" placeholder="Prueba ${n}" style="min-width:80px"></td>
+    <td><input type="number" id="nn-${rid}-${n}" placeholder="5.5" min="1" max="7" step="0.1" oninput="refreshNotas(${rid})" style="min-width:60px"></td>
+    <td><input type="number" id="np-${rid}-${n}" placeholder="30"  min="1" max="100" step="1"  oninput="refreshNotas(${rid})" style="min-width:55px"></td>
+    <td><button type="button" class="del-btn" onclick="delEval(this,${rid})" style="font-size:.8rem">×</button></td>`;
+  tb.appendChild(tr);
+}
+
+function delEval(btn, rid) {
+  const tb = document.getElementById('nr-tbody-'+rid);
+  if(tb.rows.length <= 1) return;
+  btn.closest('tr').remove();
+  Array.from(tb.rows).forEach((r,i) => r.cells[0].textContent = i+1);
+  refreshNotas(rid);
+}
+
+function delNotasRamo(id, e) {
+  e.stopPropagation();
+  notasRamos = notasRamos.filter(x => x !== id);
+  document.getElementById('nr-'+id).remove();
+  renumber('nr-', notasRamos);
+}
+
+function refreshNotas(id) {
+  const nom = document.getElementById('nr-nom-'+id)?.value || ('Ramo '+id);
+  document.getElementById('nr-tit-'+id).textContent = nom;
+  const r = calcProm(id);
+  const sub = document.getElementById('nr-sub-'+id);
+  if(r) { const ps=r.pendPond>0?` · ${r.pendPond.toFixed(0)}% pendiente`:''; sub.textContent='prom. '+r.promedio.toFixed(2)+ps; }
+  else sub.textContent = 'sin notas';
+}
+
+function calcProm(id) {
+  const tb = document.getElementById('nr-tbody-'+id); if(!tb) return null;
+  let suma=0, pond=0, pendPond=0;
+  const notas=[], pend=[];
+  Array.from(tb.rows).forEach((r,i) => {
+    const idx = i+1;
+    const nombre = (document.getElementById('ne-'+id+'-'+idx)?.value||'').trim() || ('Ev.'+idx);
+    const notaRaw= (document.getElementById('nn-'+id+'-'+idx)?.value||'').trim();
+    const p      = parseFloat((document.getElementById('np-'+id+'-'+idx)?.value||'').trim());
+    if(isNaN(p)||p<=0) return;
+    pond += p;
+    const nota = parseFloat(notaRaw);
+    if(notaRaw!==''&&!isNaN(nota)){ suma+=nota*p; notas.push({nombre,nota,pond:p}); }
+    else { pendPond+=p; pend.push({nombre,pond:p}); }
+  });
+  if(pond===0) return null;
+  return { promedio:suma/pond, suma, pond, pendPond, notas, pendientes:pend };
+}
+
+function calcularNotas() {
+  const body = document.getElementById('res-notas-body'); body.innerHTML='';
+  let hayResultados = false;
+  notasRamos.forEach(id => {
+    const nombre = document.getElementById('nr-nom-'+id)?.value || ('Ramo '+id);
+    const r = calcProm(id); if(!r) return;
+    hayResultados = true;
+    const { promedio:prom, suma, pond, pendPond, notas, pendientes } = r;
+    const EXEN=cfg.nExen, APRO=cfg.nApro, hasExen=cfg.hasExen, hasExam=cfg.hasExam;
+    let estado, tagCls, tagTxt;
+    const lines=[];
+
+    if(pendPond===0) {
+      if(hasExen&&prom>=EXEN){ estado='res-pass'; tagCls='tag-pass'; tagTxt='✓ Eximido'; }
+      else if(prom>=APRO){
+        if(!hasExam){ estado='res-pass'; tagCls='tag-pass'; tagTxt='✓ Aprobado'; }
+        else if(cfg.examOblig){
+          estado='res-warn'; tagCls='tag-warn'; tagTxt='⚠ Debe rendir examen';
+          const nExam=((APRO-(cfg.pPres/100)*prom)/(cfg.pExam/100));
+          if(nExam<=7&&nExam>=1) lines.push(`Nota mínima en examen para aprobar: <strong>${nExam.toFixed(2)}</strong>`);
+          else if(nExam<1) lines.push('Con tu promedio, apruebas el examen con cualquier nota ≥ 1.0');
+          else lines.push('No es posible aprobar aunque saques 7.0 en el examen');
+        } else { estado='res-warn'; tagCls='tag-warn'; tagTxt='✓ Aprobado (puede eximirse)'; }
+      } else {
+        estado='res-fail'; tagCls='tag-fail'; tagTxt='✗ Reprobado';
+        if(hasExam){
+          const nExam=((APRO-(cfg.pPres/100)*prom)/(cfg.pExam/100));
+          if(nExam<=7) lines.push(`Necesitas <strong>${nExam.toFixed(2)}</strong> en el examen para aprobar`);
+          else lines.push('No es posible aprobar con ninguna nota de examen');
+        }
+      }
+    } else {
+      const nMinExen = hasExen ? ((EXEN*pond-suma)/pendPond) : null;
+      const nMinApro = (APRO*pond-suma)/pendPond;
+      const promSi7  = (suma+7*pendPond)/pond;
+      lines.push(`Promedio actual: <strong>${prom.toFixed(2)}</strong> — pendientes cuentan como 0`);
+      lines.push(`Pendientes: <strong>${pendientes.map(p=>p.nombre+' ('+p.pond+'%)').join(', ')}</strong>`);
+      if(hasExen&&nMinExen!==null&&nMinExen>=1&&nMinExen<=7){
+        estado='res-warn'; tagCls='tag-warn'; tagTxt='🎯 Puede eximirse';
+        lines.push(`Para eximirte necesitas <strong>${nMinExen.toFixed(2)}</strong> en las pendientes`);
+      } else if(nMinApro>=1&&nMinApro<=7){
+        estado='res-warn'; tagCls='tag-warn'; tagTxt='⚠ Puede aprobar';
+        lines.push(`Para aprobar necesitas <strong>${nMinApro.toFixed(2)}</strong> en las pendientes`);
+      } else if(promSi7>=APRO){
+        estado='res-warn'; tagCls='tag-warn'; tagTxt='⚠ Aprobación posible';
+      } else {
+        estado='res-fail'; tagCls='tag-fail'; tagTxt='✗ En riesgo de reprobar';
+      }
+    }
+
+    const evStr = notas.length>0 ? notas.map(n=>`${n.nombre} ${n.nota.toFixed(1)} (${n.pond}%)`).join(' · ') : '';
+    const div = document.createElement('div'); div.className='res-ramo '+estado;
+    div.innerHTML=`<div class="res-ramo-top">
+        <div class="res-prom">${prom.toFixed(2)}</div>
+        <div class="res-ramo-info">
+          <div class="res-ramo-name">${nombre}</div>
+          <div class="res-ramo-sub">Promedio ponderado${pendPond>0?' parcial':''}</div>
+          <span class="tag ${tagCls}" style="margin-top:.3rem;display:inline-flex">${tagTxt}</span>
+        </div>
+      </div>
+      ${lines.length>0||evStr?`<div class="res-detail">${lines.map(l=>`<div>— ${l}</div>`).join('')}${evStr?`<div style="font-size:.7rem;color:var(--faint);margin-top:.3rem;font-family:'Fira Code',monospace">${evStr}</div>`:''}</div>`:''}`;
+    body.appendChild(div);
+  });
+
+  if(!hayResultados) {
+    body.innerHTML = '<p style="font-size:.8rem;color:var(--faint);text-align:center;padding:.5rem 0">Ingresa al menos una evaluación con nota y ponderación.</p>';
+  }
+
+  const card = document.getElementById('res-notas-card');
+  card.classList.add('show');
+  // FIX #14: scroll al resultado con timeout para asegurar que el DOM está listo
+  setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+function resetNotas() {
+  notasRamos=[]; nId=0;
+  document.getElementById('notas-list').innerHTML='';
+  const c=document.getElementById('res-notas-card');
+  c.classList.remove('show');
+  document.getElementById('res-notas-body').innerHTML='';
+  addNotasRamo();
+}
+
+// ── Asistencia ──
+function addAsistRamo() {
+  const id = ++aId; asistRamos.push(id);
+  const list = document.getElementById('asist-list');
+  const d = document.createElement('div'); d.className='ramo-block open'; d.id='ar-'+id;
+  d.innerHTML=`
+    <div class="ramo-head" onclick="toggleBlock('ar-${id}')">
+      <span class="ramo-idx">${asistRamos.length}</span>
+      <div style="flex:1"><div class="ramo-title" id="ar-tit-${id}">Ramo ${asistRamos.length}</div><div class="ramo-sub" id="ar-sub-${id}"></div></div>
+      ${asistRamos.length>1?`<button type="button" class="del-btn" onclick="delAsistRamo(${id},event)">eliminar</button>`:''}
+      <span class="chevron">▼</span>
+    </div>
+    <div class="ramo-body">
+      <div class="field"><label>Nombre del ramo</label><input type="text" id="ar-nom-${id}" placeholder="ej. Cálculo I" oninput="refreshAsist(${id})"></div>
+      <div class="fields-3">
+        <div class="field"><label>Clases realizadas</label><input type="number" id="ar-tot-${id}" placeholder="40" min="1" oninput="refreshAsist(${id})"></div>
+        <div class="field"><label>Clases asistidas</label><input type="number" id="ar-asi-${id}" placeholder="30" min="0" oninput="refreshAsist(${id})"></div>
+        <div class="field"><label>Clases restantes</label><input type="number" id="ar-res-${id}" placeholder="8" min="0" oninput="refreshAsist(${id})"><span class="hint">Aún no realizadas</span></div>
+      </div>
+    </div>`;
+  list.appendChild(d);
+}
+
+function delAsistRamo(id, e) {
+  e.stopPropagation();
+  asistRamos = asistRamos.filter(x => x !== id);
+  document.getElementById('ar-'+id).remove();
+  renumber('ar-', asistRamos);
+}
+
+function refreshAsist(id) {
+  const nom = document.getElementById('ar-nom-'+id)?.value || ('Ramo '+id);
+  document.getElementById('ar-tit-'+id).textContent = nom;
+  const tot = parseFloat(document.getElementById('ar-tot-'+id)?.value)||0;
+  const asi = parseFloat(document.getElementById('ar-asi-'+id)?.value)||0;
+  const sub = document.getElementById('ar-sub-'+id);
+  sub.textContent = tot>0 ? ((asi/tot)*100).toFixed(1)+'% actual' : '';
+}
+
+function calcularAsist() {
+  const body = document.getElementById('res-asist-body'); body.innerHTML='';
+  let hayResultados = false;
+  asistRamos.forEach(id => {
+    const nombre = document.getElementById('ar-nom-'+id)?.value || ('Ramo '+id);
+    const tot  = parseFloat(document.getElementById('ar-tot-'+id)?.value)||0;
+    const asi  = parseFloat(document.getElementById('ar-asi-'+id)?.value)||0;
+    const rest = parseFloat(document.getElementById('ar-res-'+id)?.value)||0;
+    if(tot===0) return;
+    hayResultados = true;
+    const totalSem = tot+rest;
+    const pctAct   = asi/tot*100;
+    const minCl    = Math.ceil(totalSem*(cfg.asistMin/100));
+    const necesita = Math.max(0, minCl-asi);
+    const puedeF   = Math.max(0, asi+rest-minCl);
+    const ok       = necesita <= rest;
+    const cls      = ok ? 'a-ok' : 'a-bad';
+    let detLine='';
+    if(rest>0) detLine=ok?`Puedes faltar <strong>${puedeF}</strong> clase${puedeF!==1?'s':''} más y aún pasas.`:`Necesitas ir a las próximas <strong>${necesita}</strong> clase${necesita!==1?'s':''}.`;
+    else detLine=ok?`Asistencia final <strong>${pctAct.toFixed(1)}%</strong>. ✓`:`Asistencia <strong>${pctAct.toFixed(1)}%</strong>. No alcanzas el ${cfg.asistMin}%.`;
+    const div = document.createElement('div'); div.className='asist-res '+cls;
+    div.innerHTML=`<div class="asist-top">
+      <div class="asist-pct">${pctAct.toFixed(1)}%</div>
+      <div class="asist-info">
+        <div class="asist-name">${nombre}</div>
+        <div class="asist-detail">${detLine}</div>
+        <div class="pbar-wrap"><div class="pbar" style="width:0" data-w="${Math.min(pctAct,100).toFixed(1)}"></div></div>
+      </div></div>`;
+    body.appendChild(div);
+  });
+
+  if(!hayResultados) {
+    body.innerHTML='<p style="font-size:.8rem;color:var(--faint);text-align:center;padding:.5rem 0">Ingresa las clases realizadas y asistidas de al menos un ramo.</p>';
+  }
+
+  setTimeout(()=>{ document.querySelectorAll('.pbar[data-w]').forEach(b=>b.style.width=b.dataset.w+'%'); }, 60);
+  const card = document.getElementById('res-asist-card');
+  card.classList.add('show');
+  setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+function resetAsist() {
+  asistRamos=[]; aId=0;
+  document.getElementById('asist-list').innerHTML='';
+  const c=document.getElementById('res-asist-card');
+  c.classList.remove('show');
+  document.getElementById('res-asist-body').innerHTML='';
+  addAsistRamo();
+}
+
+// ── Utils ──
+function toggleBlock(id) { document.getElementById(id).classList.toggle('open'); }
+
+function renumber(prefix, arr) {
+  arr.forEach((id,i) => {
+    const el = document.querySelector('#'+prefix+id+' .ramo-idx'); if(el) el.textContent=i+1;
   });
 }
 
-// ── EXCEL DINÁMICO ────────────────────────────────────────────────
-function descargarExcel() {
-  if (!S.ready) return;
-  readParams();
-  const { pMax, exig, nMin, nApro, nMax } = S;
-  const pApro = Math.ceil(pMax*(exig/100));
-  const dNeg  = (nApro-nMin).toFixed(1);
-  const dPos  = (nMax-nApro).toFixed(1);
-  const dPts  = pMax-pApro;
-
-  const wb   = XLSX.utils.book_new();
-  const rows = [];
-  rows.push(['PARÁMETROS','']);
-  rows.push(['Puntaje máximo', pMax]);
-  rows.push(['Exigencia (%)', exig]);
-  rows.push(['Nota mínima', nMin]);
-  rows.push(['Nota aprobación', nApro]);
-  rows.push(['Nota máxima', nMax]);
-  rows.push(['Puntaje aprobación (p*)', pApro]);
-  rows.push([]);
-  rows.push(['#','Nombre alumno/a','Puntaje','Nota']);
-  for (let i = 1; i <= 35; i++) {
-    const r = 9 + i;
-    const notaFx = `=IF(C${r}="","",IF(C${r}<${pApro},ROUND(${nMin}+(C${r}/${pApro})*${dNeg},1),ROUND(${nApro}+((C${r}-${pApro})/${dPts})*${dPos},1)))`;
-    rows.push([i, '', '', { f: notaFx }]);
+// ══════════════════════════════════════════════════════════════════
+// INIT — app-mode sincronizado con breakpoint CSS >720px
+// ══════════════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const isDesktop = window.innerWidth > 720;
+  const activeSlide = document.querySelector('.slide.active');
+  if(activeSlide && activeSlide.id === 'slide-escala' && isDesktop) {
+    document.body.classList.add('app-mode');
   }
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:4},{wch:26},{wch:14},{wch:10}];
-  ws['!freeze'] = {xSplit:0, ySplit:9};
-  XLSX.utils.book_append_sheet(wb, ws, 'Notas');
+  generar();
+  addNotasRamo();
+  addAsistRamo();
+  updateCfgUI();
+});
 
-  const inst = [
-    ['INSTRUCCIONES'],
-    ['Ingresa nombre en col B y puntaje en col C.'],
-    ['La nota (col D) se calcula automáticamente.'],
-    [`Si puntaje < ${pApro}: N = ${nMin} + (p/${pApro}) × ${dNeg}`],
-    [`Si puntaje >= ${pApro}: N = ${nApro} + ((p-${pApro})/${dPts}) × ${dPos}`],
-  ];
-  const wsI = XLSX.utils.aoa_to_sheet(inst);
-  wsI['!cols'] = [{wch:60}];
-  XLSX.utils.book_append_sheet(wb, wsI, 'Instrucciones');
-  XLSX.writeFile(wb, `notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`);
-}
-
-window.addEventListener('load', generar);
+// Al redimensionar: sincronizar app-mode con breakpoint CSS (>720px)
+window.addEventListener('resize', () => {
+  const activeSlide = document.querySelector('.slide.active');
+  if(!activeSlide) return;
+  const isDesktop = window.innerWidth > 720;
+  if(activeSlide.id === 'slide-escala' && isDesktop) {
+    document.body.classList.add('app-mode');
+  } else {
+    document.body.classList.remove('app-mode');
+  }
+});
 </script>
 </body>
 </html>
