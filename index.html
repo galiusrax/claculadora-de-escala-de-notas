@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7916906014632488"
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7916906014632488"
      crossorigin="anonymous"></script>
-  <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVQCY5D52J"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-NVQCY5D52J');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Herramientas Académicas · Chile</title>
@@ -781,17 +782,6 @@ body.modal-open { overflow:hidden !important; }
 }
 .contact-email-box:hover { background:var(--accent); color:#fff; }
 </style>
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7916906014632488"
-       crossorigin="anonymous"></script>
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVQCY5D52J"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-NVQCY5D52J');
-  </script>
 </head>
 <body>
 <div class="slides-wrap">
@@ -826,9 +816,7 @@ body.modal-open { overflow:hidden !important; }
      data-ad-slot="5234813672"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
         </div>
         <hr class="sb-divider">
         <div class="sec-label">Configuración</div>
@@ -865,9 +853,7 @@ body.modal-open { overflow:hidden !important; }
      data-ad-slot="5234813672"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
         </div>
       </aside>
 
@@ -921,9 +907,7 @@ body.modal-open { overflow:hidden !important; }
      data-ad-slot="5234813672"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
     </div>
 
     <div class="card">
@@ -977,9 +961,7 @@ body.modal-open { overflow:hidden !important; }
      data-ad-slot="5234813672"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
     </div>
     <button type="button" class="btn btn-nav" style="width:100%;justify-content:center" onclick="goTo('slide-acad')">
       Si eres estudiante, usa nuestras calculadoras académicas →
@@ -1020,9 +1002,7 @@ body.modal-open { overflow:hidden !important; }
      data-ad-slot="5234813672"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
     </div>
 
     <div class="acad-hero">
@@ -1134,9 +1114,7 @@ body.modal-open { overflow:hidden !important; }
      data-ad-slot="5234813672"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
     </div>
     <button type="button" class="btn btn-nav-outline" style="width:100%;padding:.7rem;text-align:center;margin-top:.5rem" onclick="goTo('slide-escala')">← Volver a Escala de Notas</button>
   </div><!-- /acad-page -->
@@ -1422,21 +1400,24 @@ function descargarExcel() {
     [`Si puntaje >= ${pApro}: Nota = ${nApro} + ((p-${pApro})/${dPts}) x ${dPos}`]];
   const wsI=XLSX.utils.aoa_to_sheet(inst); wsI['!cols']=[{wch:65}];
   XLSX.utils.book_append_sheet(wb,wsI,'Instrucciones');
-  // Generar blob y descargar via link — compatible con todos los browsers modernos
-  try {
-    const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-    const blob  = new Blob([wbout], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url   = URL.createObjectURL(blob);
-    const a     = document.createElement('a');
-    a.href      = url;
-    a.download  = `notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 200);
-  } catch(e) {
-    // Fallback: XLSX.writeFile directo
-    XLSX.writeFile(wb, `notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`);
-  }
+  // Descarga robusta: Blob + link programático
+  const filename = `notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`;
+  const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+  const blob  = new Blob([wbout], { type:'application/octet-stream' });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  a.style.display = 'none';
+  a.href      = url;
+  a.download  = filename;
+  document.body.appendChild(a);
+  a.click();
+  // Limpiar después de un tick para asegurar que la descarga inició
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      if(a.parentNode) a.parentNode.removeChild(a);
+    }, 1000);
+  });
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2051,5 +2032,15 @@ window.addEventListener('load', initCookieBanner);
     </div>
   </div>
 </div>
+
+<script>
+// Inicializar todos los bloques AdSense de una sola vez al cargar
+(function() {
+  var ads = document.querySelectorAll('ins.adsbygoogle');
+  ads.forEach(function() {
+    try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+  });
+})();
+</script>
 </body>
 </html>
