@@ -1398,7 +1398,6 @@ function descargarExcel() {
   const { pMax, exig, nMin, nApro, nMax } = S;
   const pApro=Math.ceil(pMax*(exig/100));
   const dNeg=(nApro-nMin).toFixed(1); const dPos=(nMax-nApro).toFixed(1); const dPts=pMax-pApro;
-  // Valores sin decimales .0 innecesarios
   const nMinFx  = parseFloat(nMin)  % 1 === 0 ? Math.floor(parseFloat(nMin))  : parseFloat(nMin);
   const nAproFx = parseFloat(nApro) % 1 === 0 ? Math.floor(parseFloat(nApro)) : parseFloat(nApro);
   const dNegFx  = parseFloat(dNeg)  % 1 === 0 ? Math.floor(parseFloat(dNeg))  : parseFloat(dNeg);
@@ -1411,9 +1410,6 @@ function descargarExcel() {
   rows.push(['#','Nombre alumno/a','Puntaje','Nota']);
   for(let i=1;i<=35;i++){
     const r=9+i;
-    // La libreria xlsx.js usa formato ingles con coma como separador de argumentos.
-    // VALOR()/VALUE() no es necesario en el .xlsx porque la celda C ya es numerica.
-    // Usar IF/ROUND en ingles — xlsx.js los escribe correctamente en el archivo.
     rows.push([i,'','',{f:`IF(C${r}="","",IF(C${r}<${pApro},ROUND(${nMinFx}+(C${r}/${pApro})*${dNegFx},1),ROUND(${nAproFx}+((C${r}-${pApro})/${dPts})*${dPosFx},1)))`}]);
   }
   const ws=XLSX.utils.aoa_to_sheet(rows);
@@ -1426,7 +1422,21 @@ function descargarExcel() {
     [`Si puntaje >= ${pApro}: Nota = ${nApro} + ((p-${pApro})/${dPts}) x ${dPos}`]];
   const wsI=XLSX.utils.aoa_to_sheet(inst); wsI['!cols']=[{wch:65}];
   XLSX.utils.book_append_sheet(wb,wsI,'Instrucciones');
-  XLSX.writeFile(wb,`notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`);
+  // Generar blob y descargar via link — compatible con todos los browsers modernos
+  try {
+    const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+    const blob  = new Blob([wbout], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href      = url;
+    a.download  = `notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 200);
+  } catch(e) {
+    // Fallback: XLSX.writeFile directo
+    XLSX.writeFile(wb, `notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1571,20 +1581,32 @@ function calcularNotas() {
     if(pendPond===0) {
       if(hasExen&&prom>=EXEN){ estado='res-pass'; tagCls='tag-pass'; tagTxt='✓ Eximido'; }
       else if(prom>=APRO){
-        if(!hasExam){ estado='res-pass'; tagCls='tag-pass'; tagTxt='✓ Aprobado'; }
-        else if(cfg.examOblig){
-          estado='res-warn'; tagCls='tag-warn'; tagTxt='⚠ Debe rendir examen';
-          const nExam=((APRO-(cfg.pPres/100)*prom)/(cfg.pExam/100));
-          if(nExam<=7&&nExam>=1) lines.push(`Nota mínima en examen para aprobar: <strong>${nExam.toFixed(2)}</strong>`);
-          else if(nExam<1) lines.push('Con tu promedio, apruebas el examen con cualquier nota ≥ 1.0');
-          else lines.push('No es posible aprobar aunque saques 7.0 en el examen');
-        } else { estado='res-warn'; tagCls='tag-warn'; tagTxt='✓ Aprobado (puede eximirse)'; }
+        if(!hasExam){
+          // Sin examen final: aprobado directamente
+          estado='res-pass'; tagCls='tag-pass'; tagTxt='✓ Aprobado';
+        } else {
+          // Hay examen final: calcular nota mínima requerida
+          const nExam = (APRO - (cfg.pPres/100)*prom) / (cfg.pExam/100);
+          if(cfg.examOblig) {
+            // Examen obligatorio aunque apruebe
+            estado='res-warn'; tagCls='tag-warn'; tagTxt='⚠ Debe rendir examen';
+          } else if(hasExen && prom < EXEN) {
+            // No eximido: debe rendir examen para aprobar el ramo
+            estado='res-warn'; tagCls='tag-warn'; tagTxt='⚠ Debe rendir examen';
+          } else {
+            // No debería llegar aquí (eximido ya se capturó arriba)
+            estado='res-pass'; tagCls='tag-pass'; tagTxt='✓ Aprobado';
+          }
+          if(nExam <= 1)       lines.push('Nota de presentación suficiente — apruebas con cualquier nota en el examen ≥ 1.0');
+          else if(nExam <= 7)  lines.push(`Nota mínima en el examen para aprobar: <strong>${nExam.toFixed(2)}</strong>`);
+          else                 lines.push('Con tu nota de presentación no es posible aprobar aunque saques 7.0 en el examen');
+        }
       } else {
         estado='res-fail'; tagCls='tag-fail'; tagTxt='✗ Reprobado';
         if(hasExam){
-          const nExam=((APRO-(cfg.pPres/100)*prom)/(cfg.pExam/100));
+          const nExam = (APRO - (cfg.pPres/100)*prom) / (cfg.pExam/100);
           if(nExam<=7) lines.push(`Necesitas <strong>${nExam.toFixed(2)}</strong> en el examen para aprobar`);
-          else lines.push('No es posible aprobar con ninguna nota de examen');
+          else         lines.push('No es posible aprobar con ninguna nota de examen');
         }
       }
     } else {
