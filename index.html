@@ -1398,11 +1398,11 @@ function descargarExcel() {
   const { pMax, exig, nMin, nApro, nMax } = S;
   const pApro=Math.ceil(pMax*(exig/100));
   const dNeg=(nApro-nMin).toFixed(1); const dPos=(nMax-nApro).toFixed(1); const dPts=pMax-pApro;
-  // Mismos valores sin decimales .0 para Excel espanol
-  const nMinFx2  = parseFloat(nMin)  % 1 === 0 ? Math.floor(parseFloat(nMin))  : parseFloat(nMin);
-  const nAproFx2 = parseFloat(nApro) % 1 === 0 ? Math.floor(parseFloat(nApro)) : parseFloat(nApro);
-  const dNegFx2  = parseFloat(dNeg)  % 1 === 0 ? Math.floor(parseFloat(dNeg))  : parseFloat(dNeg);
-  const dPosFx2  = parseFloat(dPos)  % 1 === 0 ? Math.floor(parseFloat(dPos))  : parseFloat(dPos);
+  // Valores sin decimales .0 innecesarios
+  const nMinFx  = parseFloat(nMin)  % 1 === 0 ? Math.floor(parseFloat(nMin))  : parseFloat(nMin);
+  const nAproFx = parseFloat(nApro) % 1 === 0 ? Math.floor(parseFloat(nApro)) : parseFloat(nApro);
+  const dNegFx  = parseFloat(dNeg)  % 1 === 0 ? Math.floor(parseFloat(dNeg))  : parseFloat(dNeg);
+  const dPosFx  = parseFloat(dPos)  % 1 === 0 ? Math.floor(parseFloat(dPos))  : parseFloat(dPos);
   const wb=XLSX.utils.book_new(), rows=[];
   rows.push(['PARÁMETROS','']); rows.push(['Puntaje máximo',pMax]);
   rows.push(['Exigencia (%)',exig]); rows.push(['Nota mínima',nMin]);
@@ -1411,15 +1411,20 @@ function descargarExcel() {
   rows.push(['#','Nombre alumno/a','Puntaje','Nota']);
   for(let i=1;i<=35;i++){
     const r=9+i;
-    rows.push([i,'','',{f:`=SI(C${r}="";"";SI(VALOR(C${r})<${pApro};REDONDEAR(${nMinFx2}+(VALOR(C${r})/${pApro})*${dNegFx2};1);REDONDEAR(${nAproFx2}+((VALOR(C${r})-${pApro})/${dPts})*${dPosFx2};1)))`}]);
+    // La libreria xlsx.js usa formato ingles con coma como separador de argumentos.
+    // VALOR()/VALUE() no es necesario en el .xlsx porque la celda C ya es numerica.
+    // Usar IF/ROUND en ingles — xlsx.js los escribe correctamente en el archivo.
+    rows.push([i,'','',{f:`IF(C${r}="","",IF(C${r}<${pApro},ROUND(${nMinFx}+(C${r}/${pApro})*${dNegFx},1),ROUND(${nAproFx}+((C${r}-${pApro})/${dPts})*${dPosFx},1)))`}]);
   }
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws['!cols']=[{wch:4},{wch:26},{wch:14},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws,'Notas');
-  const inst=[['INSTRUCCIONES'],['Ingresa nombre en col B, puntaje en col C.'],['Nota (col D) se calcula automáticamente.'],
-    [`Si puntaje < ${pApro}: N = ${nMin} + (p/${pApro}) × ${dNeg}`],
-    [`Si puntaje >= ${pApro}: N = ${nApro} + ((p-${pApro})/${dPts}) × ${dPos}`]];
-  const wsI=XLSX.utils.aoa_to_sheet(inst); wsI['!cols']=[{wch:60}];
+  const inst=[['INSTRUCCIONES'],['Ingresa nombre en col B, puntaje en col C.'],['Nota (col D) se calcula automaticamente.'],
+    ['La formula en col D se aplica automaticamente al ingresar puntaje en col C.'],
+    [`Puntaje aprobacion: ${pApro} pts (${exig}% de ${pMax})`],
+    [`Si puntaje < ${pApro}: Nota = ${nMin} + (p/${pApro}) x ${dNeg}`],
+    [`Si puntaje >= ${pApro}: Nota = ${nApro} + ((p-${pApro})/${dPts}) x ${dPos}`]];
+  const wsI=XLSX.utils.aoa_to_sheet(inst); wsI['!cols']=[{wch:65}];
   XLSX.utils.book_append_sheet(wb,wsI,'Instrucciones');
   XLSX.writeFile(wb,`notas-P${pMax}-E${exig}-${nMin}a${nMax}.xlsx`);
 }
