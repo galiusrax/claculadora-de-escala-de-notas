@@ -84,8 +84,12 @@ body {
 body.app-mode {
   overflow:hidden;
   height:100vh;
+  display:flex;
+  flex-direction:column;
 }
 .slides-wrap { position:relative; }
+body.app-mode .slides-wrap { flex:1 1 auto; min-height:0; overflow:hidden; }
+body.app-mode .slide.active { height:100%; }
 .slide { display:none; }
 .slide.active { display:block; }
 #slide-acad {
@@ -177,7 +181,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
   -webkit-tap-highlight-color:transparent;
 }
 .theme-btn:hover { background:var(--border); }
-.app { display:none; height:100vh; overflow:hidden; flex-direction:column; }
+.app { display:none; height:100%; overflow:hidden; flex-direction:column; }
 @media(min-width:721px) {
   #slide-escala.active .app { display:flex; }
   #slide-escala.active .mob { display:none !important; }
@@ -733,16 +737,8 @@ input[type="file"] { display:none; }
   z-index:10;
 }
 body.app-mode .site-footer {
-  position:fixed;
-  bottom:0; left:0; right:0;
-  z-index:90;
+  flex-shrink:0;
   padding:.42rem 1rem;
-}
-body.app-mode .multi-table-scroll { padding-bottom:2.4rem; }
-body.app-mode .sidebar { padding-bottom:3rem; }
-@media(min-width:721px) and (max-width:1100px) {
-  body.app-mode .sidebar { padding-bottom:3.4rem; }
-  body.app-mode .multi-table-scroll { padding-bottom:2.8rem; }
 }
 .sep { color:var(--border); user-select:none; }
 .footer-btn {
@@ -927,6 +923,36 @@ body.modal-open { overflow:hidden !important; }
 .paes-resumen-item .ri-label { font-size:.62rem; color:var(--faint); font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .paes-resumen-item .ri-val { font-size:1.1rem; font-weight:800; color:var(--text); margin-top:.15rem; }
 .paes-resumen-empty { font-size:.78rem; color:var(--faint); text-align:center; padding:.6rem 0; }
+
+.paes-plan-card { background:var(--surface); border:1px solid var(--border);
+  border-radius:13px; padding:1rem; box-shadow:var(--shadow); }
+.paes-plan-card.hidden { display:none; }
+.paes-plan-intro { font-size:.76rem; color:var(--muted); margin:.35rem 0 .8rem; line-height:1.5; }
+.paes-plan-item { border:1px solid var(--border); border-radius:11px; padding:.85rem .95rem;
+  margin-bottom:.65rem; border-left:4px solid var(--border); }
+.paes-plan-item:last-child { margin-bottom:0; }
+.paes-plan-item.prio-alta  { border-left-color:var(--fail); }
+.paes-plan-item.prio-media { border-left-color:var(--warn); }
+.paes-plan-item.prio-baja  { border-left-color:var(--pass); }
+.paes-plan-head { display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem; flex-wrap:wrap; }
+.paes-plan-icon { width:30px; height:30px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:800; color:#fff; }
+.paes-plan-titlewrap { flex:1; min-width:140px; }
+.paes-plan-title { font-size:.86rem; font-weight:800; color:var(--text); }
+.paes-plan-sub { font-size:.68rem; color:var(--muted); margin-top:.1rem; }
+.paes-plan-badge { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+  border-radius:999px; padding:.2rem .6rem; white-space:nowrap; }
+.paes-plan-badge.prio-alta  { background:var(--fail-bg); color:var(--fail); }
+.paes-plan-badge.prio-media { background:var(--warn-bg); color:var(--warn); }
+.paes-plan-badge.prio-baja  { background:var(--pass-bg); color:var(--pass); }
+.paes-plan-ejes { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.55rem; }
+.paes-plan-eje { background:var(--surface2); border:1px solid var(--border); border-radius:6px;
+  padding:.16rem .5rem; font-size:.66rem; font-weight:700; color:var(--muted); }
+.paes-plan-tips { margin:0; padding-left:1.1rem; font-size:.76rem; color:var(--muted); line-height:1.65; }
+.paes-plan-tips li { margin-bottom:.3rem; }
+.paes-plan-horas { font-size:.68rem; color:var(--faint); font-weight:700; margin-top:.55rem;
+  padding-top:.5rem; border-top:1px solid var(--border); }
+.paes-plan-horas b { color:var(--accent); }
 
 .paes-nota {
   font-size:.66rem; color:var(--faint); line-height:1.55; background:var(--surface2);
@@ -1319,8 +1345,14 @@ body.modal-open { overflow:hidden !important; }
       </div>
     </div>
 
+    <div class="paes-plan-card hidden" id="paes-plan-card">
+      <div class="s-label">📚 Plan de estudio sugerido según tus resultados</div>
+      <p class="paes-plan-intro">Ordenado por prioridad: primero las pruebas donde más puedes subir tu puntaje.</p>
+      <div id="paes-plan-body"></div>
+    </div>
+
     <div class="paes-nota">
-      ℹ️ Los puntajes se calculan por <strong>interpolación lineal</strong> entre los valores oficiales de la tabla de transformación de puntajes DEMRE para el proceso de admisión correspondiente. Si el número de correctas no aparece exactamente en la tabla (lo cual no ocurre aquí, ya que se ingresan números enteros), se interpola entre los dos puntos más cercanos. Estos valores son referenciales: la tabla oficial puede variar levemente entre procesos de admisión.
+      ℹ️ Los puntajes se calculan por <strong>interpolación lineal</strong> a partir de la tabla de transformación de puntajes oficial de DEMRE del <strong>Proceso de Admisión 2026</strong>, la más reciente publicada hasta ahora. La tabla del Proceso de Admisión 2027 aún no está disponible: DEMRE la publica recién después de rendir la PAES regular de diciembre. Si el número de correctas no aparece exactamente en la tabla (lo cual no ocurre aquí, ya que se ingresan números enteros), se interpola entre los dos puntos más cercanos. Estos valores son referenciales: la tabla oficial puede variar levemente entre procesos de admisión.
     </div>
 
     <button type="button" class="btn btn-nav-outline" style="width:100%;padding:.7rem;text-align:center;margin-top:.5rem" onclick="goTo('slide-escala')">← Volver a Escala de Notas</button>
@@ -1328,7 +1360,6 @@ body.modal-open { overflow:hidden !important; }
 </div><!-- /slide-paes -->
 
 </div><!-- /slides-wrap -->
-</div>
 <script>
 function goTo(id) {
   document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
@@ -2974,6 +3005,108 @@ function paesActualizarResumen(){
   ` : '');
 
   body.innerHTML = `<div class="paes-resumen-grid">${items}</div>`;
+
+  paesGenerarPlanEstudio(activos);
+}
+
+const PAES_TIPS_POR_PRUEBA = {
+  lectora: {
+    icono:'📖', color:'var(--accent)',
+    ejes:['Localizar información explícita','Relacionar e interpretar','Evaluar forma y contenido'],
+    tips:[
+      'Practica con textos variados (científicos, argumentativos, literarios) leyendo 20-30 min diarios.',
+      'Antes de leer las alternativas, resume en una frase qué pregunta el ítem.',
+      'Para preguntas de inferencia, subraya las pistas del texto que apoyan cada alternativa.',
+      'Cronometra ensayos completos: la gestión del tiempo suele pesar tanto como el contenido.',
+    ]
+  },
+  m1: {
+    icono:'➗', color:'var(--blue)',
+    ejes:['Números','Álgebra y funciones','Geometría','Probabilidad y estadística'],
+    tips:[
+      'Repasa operatoria con fracciones, potencias y porcentajes: son la base de casi todo M1.',
+      'Practica resolver ecuaciones e inecuaciones de primer y segundo grado sin calculadora.',
+      'Dibuja siempre que puedas: en geometría un buen dibujo evita la mitad de los errores.',
+      'Resuelve ensayos por ejes temáticos primero, luego mezclados a contrarreloj.',
+    ]
+  },
+  m2: {
+    icono:'📐', color:'var(--purple)',
+    ejes:['Álgebra y funciones avanzadas','Geometría analítica','Probabilidad y estadística inferencial'],
+    tips:[
+      'Refuerza funciones (lineal, cuadrática, exponencial, logarítmica) y su interpretación gráfica.',
+      'Practica geometría analítica: distancia, punto medio, ecuación de la recta y la circunferencia.',
+      'Trabaja problemas de probabilidad condicional y combinatoria con casos reales.',
+      'M2 pondera más el razonamiento que el cálculo: prioriza entender el problema antes de operar.',
+    ]
+  },
+  ciencias: {
+    icono:'🔬', color:'var(--pass)',
+    ejes:['Biología','Física','Química'],
+    tips:[
+      'Identifica en qué módulo (Biología, Física o Química) tienes más preguntas erróneas y prioriza ese.',
+      'Usa mapas conceptuales para conectar procesos (ej. fotosíntesis, ciclo del agua, leyes de Newton).',
+      'Practica lectura e interpretación de gráficos y tablas de datos experimentales.',
+      'Resuelve preguntas de habilidades científicas (diseño experimental, control de variables) aparte del contenido puro.',
+    ]
+  },
+  historia: {
+    icono:'🏛️', color:'var(--warn)',
+    ejes:['Historia de Chile y el mundo','Formación ciudadana','Sistema económico'],
+    tips:[
+      'Arma una línea de tiempo con los procesos históricos clave (Independencia, siglo XX, dictadura, transición).',
+      'Practica análisis de fuentes (mapas, gráficos, documentos): suelen valer varias preguntas por ensayo.',
+      'Repasa conceptos de formación ciudadana (Estado, derechos, instituciones) que se repiten cada proceso.',
+      'Relaciona economía y sociedad: son ejes muy consultados en preguntas de aplicación.',
+    ]
+  },
+};
+
+function paesGenerarPlanEstudio(activos){
+  const card = document.getElementById('paes-plan-card');
+  const body = document.getElementById('paes-plan-body');
+  if(!card || !body) return;
+
+  if(activos.length === 0){
+    card.classList.add('hidden');
+    body.innerHTML = '';
+    return;
+  }
+
+  const conPrioridad = activos.map(p => {
+    const pct = p.buenas / p.max;
+    let prio, prioLabel;
+    if(pct < 0.5){ prio='alta'; prioLabel='Prioridad alta'; }
+    else if(pct < 0.75){ prio='media'; prioLabel='Prioridad media'; }
+    else { prio='baja'; prioLabel='Mantención'; }
+    return { ...p, pct, prio, prioLabel };
+  }).sort((a,b) => a.pct - b.pct);
+
+  const pesos = conPrioridad.map(p => Math.max(0.15, 1 - p.pct));
+  const sumaPesos = pesos.reduce((a,w)=>a+w,0);
+  const horasTotalesSemana = 10;
+
+  const items = conPrioridad.map((p, i) => {
+    const info = PAES_TIPS_POR_PRUEBA[p.id];
+    if(!info) return '';
+    const horas = sumaPesos > 0 ? Math.max(0.5, Math.round((pesos[i]/sumaPesos)*horasTotalesSemana*2)/2) : 0;
+    return `<div class="paes-plan-item prio-${p.prio}">
+      <div class="paes-plan-head">
+        <div class="paes-plan-icon" style="background:${info.color}">${info.icono}</div>
+        <div class="paes-plan-titlewrap">
+          <div class="paes-plan-title">${p.nombre}</div>
+          <div class="paes-plan-sub">${p.buenas}/${p.max} correctas · ${Math.round(p.pct*100)}% · ${p.puntaje} pts</div>
+        </div>
+        <span class="paes-plan-badge prio-${p.prio}">${p.prioLabel}</span>
+      </div>
+      <div class="paes-plan-ejes">${info.ejes.map(e=>`<span class="paes-plan-eje">${e}</span>`).join('')}</div>
+      <ul class="paes-plan-tips">${info.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+      <div class="paes-plan-horas">Sugerencia: dedica ~<b>${horas}h</b> a la semana a esta prueba.</div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = items;
+  card.classList.remove('hidden');
 }
 
 window.addEventListener('DOMContentLoaded', paesRenderGrid);
