@@ -753,6 +753,42 @@ body.app-mode .site-footer {
   .footer-btn  { font-size:.6rem; }
   .footer-credit { font-size:.6rem; }
 }
+:root { --ad-bar-h: 100px; }
+#adsterra-native-wrap {
+  width:100%;
+  position:relative;
+}
+#ad-bar-close {
+  display:none;
+}
+body.app-mode {
+  height: calc(100vh - var(--ad-bar-h));
+}
+body.app-mode #adsterra-native-wrap {
+  position:fixed;
+  left:0; right:0; bottom:0;
+  z-index:60;
+  height:var(--ad-bar-h);
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+body.app-mode #ad-bar-close {
+  display:flex;
+  position:absolute;
+  top:4px; right:6px;
+  width:20px; height:20px;
+  align-items:center; justify-content:center;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:5px; color:var(--faint); font-size:.7rem; font-weight:800;
+  cursor:pointer; z-index:61; line-height:1;
+}
+body.app-mode #ad-bar-close:hover { background:var(--fail-bg); color:var(--fail); }
+body.app-mode.ad-hidden { height:100vh; }
+body.app-mode.ad-hidden #adsterra-native-wrap { display:none; }
 .cookie-banner {
   position:fixed; bottom:2.5rem; left:50%;
   transform:translateX(-50%);
@@ -3230,10 +3266,22 @@ window.addEventListener('DOMContentLoaded', paesRenderGrid);
 </div>
 
 <!-- Adsterra -->
-<script async="async" data-cfasync="false" src="https://pl30569165.effectivecpmnetwork.com/79c2381fe664e1a43810f4a4e30cf507/invoke.js"></script>
-<div id="container-79c2381fe664e1a43810f4a4e30cf507"></div>
+<div id="adsterra-native-wrap">
+  <button type="button" id="ad-bar-close" onclick="ocultarAdBar()" title="Ocultar anuncio">&times;</button>
+  <script async="async" data-cfasync="false" src="https://pl30569165.effectivecpmnetwork.com/79c2381fe664e1a43810f4a4e30cf507/invoke.js"></script>
+  <div id="container-79c2381fe664e1a43810f4a4e30cf507"></div>
+</div>
 <script src="https://pl30569166.effectivecpmnetwork.com/2e/27/8c/2e278c03ee10107a0daef3d7e9420f7b.js"></script>
 <script src="https://pl30569138.effectivecpmnetwork.com/df/7f/65/df7f65de4bf7ac96bdf33dbb3bef2ec3.js"></script>
+<script>
+function ocultarAdBar() {
+  document.body.classList.add('ad-hidden');
+  try { localStorage.setItem('ad-bar-hidden', '1'); } catch(e) {}
+}
+if (localStorage.getItem('ad-bar-hidden') === '1') {
+  document.addEventListener('DOMContentLoaded', () => document.body.classList.add('ad-hidden'));
+}
+</script>
 
 </body>
 </html>
