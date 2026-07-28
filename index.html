@@ -753,42 +753,43 @@ body.app-mode .site-footer {
   .footer-btn  { font-size:.6rem; }
   .footer-credit { font-size:.6rem; }
 }
-:root { --ad-bar-h: 100px; }
+:root { --ad-w: 300px; --ad-h: 110px; }
 #adsterra-native-wrap {
-  width:100%;
-  position:relative;
+  position:fixed;
+  right:12px; bottom:12px;
+  width:var(--ad-w);
+  height:var(--ad-h);
+  overflow:hidden;
+  z-index:200;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  transform:translateZ(0);
+  isolation:isolate;
+  contain:layout paint size style;
+}
+#adsterra-native-wrap iframe,
+#adsterra-native-wrap div,
+#adsterra-native-wrap img,
+#adsterra-native-wrap a {
+  max-width:100% !important;
+  position:relative !important;
 }
 #ad-bar-close {
-  display:none;
-}
-body.app-mode {
-  height: calc(100vh - var(--ad-bar-h));
-}
-body.app-mode #adsterra-native-wrap {
-  position:fixed;
-  left:0; right:0; bottom:0;
-  z-index:60;
-  height:var(--ad-bar-h);
-  background:var(--surface);
-  border-top:1px solid var(--border);
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-body.app-mode #ad-bar-close {
-  display:flex;
   position:absolute;
-  top:4px; right:6px;
+  top:4px; right:4px;
   width:20px; height:20px;
-  align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center;
   background:var(--surface2); border:1px solid var(--border);
   border-radius:5px; color:var(--faint); font-size:.7rem; font-weight:800;
-  cursor:pointer; z-index:61; line-height:1;
+  cursor:pointer; z-index:210; line-height:1;
 }
-body.app-mode #ad-bar-close:hover { background:var(--fail-bg); color:var(--fail); }
-body.app-mode.ad-hidden { height:100vh; }
-body.app-mode.ad-hidden #adsterra-native-wrap { display:none; }
+#ad-bar-close:hover { background:var(--fail-bg); color:var(--fail); }
+body.ad-hidden #adsterra-native-wrap { display:none; }
+@media(max-width:480px) {
+  #adsterra-native-wrap { width:calc(100vw - 24px); right:12px; height:90px; }
+}
 .cookie-banner {
   position:fixed; bottom:2.5rem; left:50%;
   transform:translateX(-50%);
